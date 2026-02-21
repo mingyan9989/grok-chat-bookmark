@@ -1,13 +1,19 @@
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message?.type !== 'EXTRACT_GROK_CHAT') {
+  if (message?.type === 'EXTRACT_GROK_CHAT') {
+    extractCurrentChat()
+      .then((chat) => sendResponse({ ok: true, chat }))
+      .catch((error) => sendResponse({ ok: false, error: error.message }));
+
+    return true;
+  }
+
+  if (message?.type === 'SHOW_EXPORT_CARD') {
+    showExportCard(message.payload || {});
+    sendResponse({ ok: true });
     return false;
   }
 
-  extractCurrentChat()
-    .then((chat) => sendResponse({ ok: true, chat }))
-    .catch((error) => sendResponse({ ok: false, error: error.message }));
-
-  return true;
+  return false;
 });
 
 async function extractCurrentChat() {
@@ -291,4 +297,70 @@ function isUsefulText(text) {
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function showExportCard(payload) {
+  const root = ensureCardRoot();
+  const card = document.createElement('div');
+  card.className = 'grok-bookmark-card';
+
+  const title = document.createElement('h4');
+  title.className = 'grok-bookmark-title';
+  title.textContent = payload.title || 'Grok Bookmark';
+
+  const meta = document.createElement('p');
+  meta.className = 'grok-bookmark-meta';
+  const mode = payload.mode || 'TLDR';
+  const saveInfo = payload.method === 'native' ? payload.filePath : payload.filename;
+  meta.textContent = `${mode} · ${saveInfo || ''}`.trim();
+
+  const preview = document.createElement('pre');
+  preview.className = 'grok-bookmark-preview';
+  preview.textContent = payload.preview || 'Export completed.';
+
+  const actions = document.createElement('div');
+  actions.className = 'grok-bookmark-actions';
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'grok-bookmark-close';
+  closeBtn.textContent = '关闭';
+  closeBtn.addEventListener('click', () => {
+    card.remove();
+    if (!root.children.length) {
+      root.remove();
+    }
+  });
+  actions.appendChild(closeBtn);
+
+  card.appendChild(title);
+  card.appendChild(meta);
+  card.appendChild(preview);
+  card.appendChild(actions);
+
+  root.prepend(card);
+  while (root.children.length > 4) {
+    root.lastElementChild?.remove();
+  }
+
+  setTimeout(() => {
+    if (!card.isConnected) return;
+    card.classList.add('fade-out');
+    setTimeout(() => {
+      card.remove();
+      if (!root.children.length) {
+        root.remove();
+      }
+    }, 240);
+  }, 9000);
+}
+
+function ensureCardRoot() {
+  let root = document.getElementById('grok-bookmark-stack');
+  if (root) {
+    return root;
+  }
+
+  root = document.createElement('div');
+  root.id = 'grok-bookmark-stack';
+  document.body.appendChild(root);
+  return root;
 }

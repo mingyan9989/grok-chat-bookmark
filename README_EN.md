@@ -15,6 +15,7 @@
 - Optional API key mode for cloud providers (`API Key + Model`)
 - Custom Base URL support for proxy/private gateway routing
 - Deep extraction: auto-expands collapsed content such as “Show more” before export
+- Card stacking: consecutive exports show stacked result cards at bottom-right
 - Custom base folder (Claude Code root)
 - Custom subfolder name (default: `grok bookmark`)
 - Download fallback when native write fails

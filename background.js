@@ -81,11 +81,20 @@ async function exportCurrentGrokChat() {
   const tldr = await generateStructuredTldr(chat, settings);
   const finalMarkdown = renderExportMarkdown({ chat, tldr, originalConversation, settings });
   const filename = buildFilename(chat.title || 'grok-chat');
+  const preview = buildCardPreview(tldr, originalConversation);
+  const mode = settings.aiEnabled && settings.exportMode === 'tldr' ? 'TLDR' : 'Original';
 
   const target = await ensureTargetPath(settings);
   if (target.baseFolderPath) {
     try {
       const saved = await writeViaNativeHost(target.baseFolderPath, target.folderName, filename, finalMarkdown);
+      notifyExportCard(tab.id, {
+        title: chat.title || 'Grok Chat',
+        mode,
+        method: 'native',
+        filePath: saved.path,
+        preview
+      });
       return {
         method: 'native',
         filePath: saved.path,
@@ -99,6 +108,13 @@ async function exportCurrentGrokChat() {
   }
 
   await downloadMarkdown(finalMarkdown, settings.folderName, filename);
+  notifyExportCard(tab.id, {
+    title: chat.title || 'Grok Chat',
+    mode,
+    method: 'download',
+    filename,
+    preview
+  });
   return {
     method: 'download',
     filename
@@ -405,6 +421,13 @@ function buildFallbackTldr(chat) {
   ].join('\n');
 }
 
+function buildCardPreview(tldr, originalConversation) {
+  if (tldr) {
+    return tldr.replace(/\n{2,}/g, '\n').slice(0, 260);
+  }
+  return originalConversation.replace(/\n{2,}/g, '\n').slice(0, 260);
+}
+
 async function ensureTargetPath(settings) {
   const folderName = (settings.folderName || DEFAULT_SETTINGS.folderName).trim() || DEFAULT_SETTINGS.folderName;
 
@@ -502,4 +525,9 @@ function sendNativeMessage(payload) {
       resolve(response || {});
     });
   });
+}
+
+function notifyExportCard(tabId, payload) {
+  if (!tabId) return;
+  chrome.tabs.sendMessage(tabId, { type: 'SHOW_EXPORT_CARD', payload }).catch(() => {});
 }

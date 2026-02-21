@@ -1,0 +1,121 @@
+#grok-bookmark-stack {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2147483647;
+  width: min(360px, calc(100vw - 24px));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.grok-bookmark-card {
+  pointer-events: auto;
+  background: #ffffff;
+  border: 1px solid rgba(17, 24, 39, 0.14);
+  border-radius: 12px;
+  box-shadow: 0 10px 28px rgba(17, 24, 39, 0.2);
+  padding: 10px;
+  animation: grok-bookmark-in 180ms ease-out;
+}
+
+.grok-bookmark-card.fade-out {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.grok-bookmark-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.grok-bookmark-meta {
+  margin: 4px 0 8px;
+  font-size: 11px;
+  color: #4b5563;
+  line-height: 1.4;
+}
+
+.grok-bookmark-preview {
+  margin: 0;
+  padding: 8px;
+  border-radius: 8px;
+  background: #f5f7fa;
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  max-height: 110px;
+  overflow: auto;
+  color: #111827;
+}
+
+.grok-bookmark-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.grok-bookmark-close {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #374151;
+  font-size: 11px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.grok-bookmark-close:hover {
+  border-color: #9ca3af;
+}
+
+@media (max-width: 640px) {
+  #grok-bookmark-stack {
+    right: 8px;
+    left: 8px;
+    width: auto;
+    bottom: 8px;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .grok-bookmark-card {
+    background: #0f172a;
+    border-color: rgba(148, 163, 184, 0.35);
+    box-shadow: 0 10px 28px rgba(2, 6, 23, 0.55);
+  }
+
+  .grok-bookmark-title {
+    color: #f8fafc;
+  }
+
+  .grok-bookmark-meta {
+    color: #cbd5e1;
+  }
+
+  .grok-bookmark-preview {
+    background: #111827;
+    color: #e5e7eb;
+  }
+
+  .grok-bookmark-close {
+    background: #111827;
+    border-color: #334155;
+    color: #cbd5e1;
+  }
+}
+
+@keyframes grok-bookmark-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
