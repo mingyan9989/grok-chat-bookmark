@@ -1,133 +1,203 @@
 # Grok Bookmark
 
-> 一个 Chrome 扩展：点击一次按钮，把当前 Grok 对话导出为 Markdown，并优先保存到你的 Claude Code 目录。
+A Chrome extension that exports the current Grok conversation to Markdown with one click, and saves it to your Claude Code folder by default.
 
-[English](README_EN.md) | 中文
+## English
 
-## Key Highlights | 核心亮点
+### Key Highlights
 
-- One-click export of the current Grok conversation to Markdown. / 一键导出 Grok 当前对话为 Markdown。
-- Supports TLDR summary mode and original-content mode. / 支持 TLDR 摘要模式与原文模式。
-- Supports local Claude Code and cloud providers (OpenAI/Claude/Kimi/Zhipu). / 支持本地 Claude Code 与云模型（OpenAI/Claude/Kimi/智谱）。
-- Supports multilingual summaries (zh-CN/zh-TW/English/日本語/한국어). / 支持多语言摘要（简中/繁中/English/日本語/한국어）。
-- Supports UI language switch (English/中文) and theme modes (Auto/Light/Dark). / 支持界面语言切换（English/中文）与主题模式（自动/浅色/深色）。
-- Supports custom save path via Native Helper (default: Downloads/grok-chat-bookmark/). / 支持通过 Native Helper 自定义保存路径（默认：Downloads/grok-chat-bookmark/）。
-- API keys are encrypted with AES-GCM in local storage and never synced. / API Key 使用 AES-GCM 在本地加密存储，不会同步。
+- One-click export of the current Grok conversation to Markdown.
+- Supports TLDR summary mode and original-content mode.
+- Supports local Claude Code and cloud providers (OpenAI / Claude / Kimi / Zhipu).
+- Supports multilingual summaries (zh-CN / zh-TW / English / Japanese / Korean).
+- Supports popup UI language switch (Chinese / English).
+- Supports theme modes (Auto / Light / Dark) for popup and export cards.
+- Supports custom save path via Native Helper (default: `Downloads/grok-chat-bookmark/`).
+- API keys are encrypted with AES-GCM in local storage and never synced.
 
-## 功能特点
+### Features
 
-- 一键导出：在 Grok 对话页点击扩展按钮，立即导出当前对话
-- 结构化 TLDR：AI 模式下自动生成 `Key Points / Step-by-Step / Fact Check(1-10) / Open Questions`
-- AI 开关：默认开启，可一键关闭 AI 摘要
-- 原文模式：可切换为仅保存原文 + 元数据（跳过 AI 摘要）
-- 默认 Claude Code 流程：默认使用本地 Claude Code CLI（无需 API Key）
-- 多模型支持：`OpenAI / Claude / Kimi / 智谱 / 本地 Claude`
-- 可选 API Key：非本地 Claude 模式下可填写 `API Key + Model`
-- 自定义 Base URL：可配置代理或私有网关地址
-- 深度内容提取：导出前自动展开对话中的“显示更多/Show more”等折叠内容
-- 卡片堆叠：连续导出时，页面右下角显示可叠加的结果卡片
-- 历史记录：自动保存导出记录，可在弹窗“历史”页回看
-- Markdown 归档：AI 模式导出 `TLDR + 原文`，并附带 Metadata/Referenced Links
-- 自定义保存路径：通过 Native Helper 可选择任意本地目录并支持清空重选
-- 多语言摘要：支持简中 / 繁中 / English / 日本語 / 한국어
-- 深色模式：支持自动/浅色/深色三档切换（弹窗与导出卡片）
-- 界面语言：弹窗 UI 支持中文 / English 切换
-- 安全存储：API Key 使用 AES-GCM 加密后存储在 `chrome.storage.local`（不走 sync）
-- 自定义目录：可指定 Claude Code 根目录
-- 自定义子文件夹名：默认 `grok-chat-bookmark`，可改成任何名字
-- 失败回退：本地写入失败时可自动回退到浏览器下载
+- One-click export from the current Grok chat page.
+- Structured TLDR in AI mode: `Key Points / Step-by-Step / Fact Check (1-10) / Open Questions`.
+- AI toggle (enabled by default) to disable summarization instantly.
+- Original mode to save raw conversation + metadata without AI TLDR.
+- Custom Base URL support for proxy/private gateway routing.
+- Deep extraction: auto-expands collapsed content such as "Show more" before export.
+- Card stacking: consecutive exports show stacked result cards at bottom-right.
+- History: exports are saved and viewable in the popup History tab.
+- Markdown archive includes TLDR + original conversation with metadata/referenced links.
 
-## 安装
+### Installation
 
-1. 打开 Chrome 扩展页：`chrome://extensions/`
-2. 打开右上角 **开发者模式**
-3. 点击 **加载已解压的扩展程序**
-4. 选择你本地的 `grok-chat-bookmark` 项目目录
+1. Open `chrome://extensions/`.
+2. Enable **Developer mode**.
+3. Click **Load unpacked**.
+4. Select your local `grok-chat-bookmark` project folder.
 
-## 默认模式（推荐）
+### Default Workflow (Recommended)
 
-默认模式是 `Claude Code（默认）`，不需要 API Key。
+Default mode is `Claude Code` and does not require an API key.
 
-### 1) 安装 Claude Code CLI
+1. Install Claude Code CLI:
 
 ```bash
 npm install -g @anthropic-ai/claude-code
 claude login
 ```
 
-### 2) 安装 Native Host（只需一次）
-
-1. 在 `chrome://extensions/` 找到这个扩展，复制扩展 ID
-2. 在终端执行：
+2. Install Native Host (one-time):
 
 ```bash
-cd "<你的项目目录>/grok-chat-bookmark/native-host"
-bash install-macos.sh <你的扩展ID>
+cd "<your-project-path>/grok-chat-bookmark/native-host"
+bash install-macos.sh <your-extension-id>
 ```
 
-3. 重启浏览器
+3. Restart browser.
+4. Open a Grok conversation page.
+5. Click extension icon -> **Export Current Chat**.
 
-### 3) 首次导出
-
-1. 打开任意 Grok 对话页面
-2. 点击扩展图标
-3. 点 `导出当前对话`
-4. 首次会弹出目录选择器，选择你的 Claude Code 根目录
-5. 文件会保存到：
+Output path:
 
 ```text
-<你选的目录>/<folderName>/<timestamp>_<title>.md
+<selected-root>/<folderName>/<timestamp>_<title>.md
 ```
 
-其中 `folderName` 默认是 `grok-chat-bookmark`。
+Default `folderName`: `grok-chat-bookmark`.
 
-## 自定义保存路径（可选）
+### Custom Save Path (Optional)
 
-默认保存到 `Downloads/grok-chat-bookmark/` 目录。如需保存到其他文件夹：
+By default, files are saved to `Downloads/grok-chat-bookmark/`.
 
-1. 在高级设置中点击「一键下载安装脚本」
-2. 在终端运行 `bash ~/Downloads/install-btl-native.sh`
-3. 重启浏览器
-4. 在高级设置中点击「选择文件夹」，选择任意本地目录
+To use another folder:
 
-## 云模型模式
+1. Click **One-click download install script** in Advanced Settings.
+2. Run `bash ~/Downloads/install-btl-native.sh`.
+3. Restart browser.
+4. Click **Choose Folder** in Advanced Settings.
 
-如果不走 Claude Code，可切换到云模型提供方（OpenAI / Claude / Kimi / 智谱）：
+### Cloud Provider Mode
 
-1. 在弹窗保持 `AI 摘要开关` 开启，导出模式选 `TLDR`
-2. 选择摘要语言与 AI 提供方
-3. 填写：
-- API Key
-- Model（可留空，使用默认）
-- Base URL（可留空，留空即走官方默认接口）
-4. 保存设置后导出
+If you don't want Claude Code mode, switch to cloud provider mode:
 
-说明：保存路径逻辑不变（优先本地写入，失败可回退下载）。
+1. Keep `AI toggle` on and select `TLDR` mode.
+2. Choose summary language and provider.
+3. Fill API Key and optional Model/Base URL.
+4. Save settings and export.
 
-## 使用流程
-
-1. 打开 `https://grok.com/` 的对话页面
-2. 点击扩展图标
-3. 点击 `导出当前对话`
-4. 完成
-
-## 项目结构
+### Project Structure
 
 ```text
 grok-chat-bookmark/
 ├── manifest.json
 ├── background.js
 ├── content.js
+├── content.css
 ├── popup.html
 ├── popup.css
 ├── popup.js
+├── icons/
 └── native-host/
     ├── grok_file_writer.py
     └── install-macos.sh
 ```
 
-## 注意事项
+---
 
-- 本扩展当前针对 `https://grok.com/*`
-- 若 Grok 页面 DOM 结构变化，可能需要更新 `content.js` 的提取规则
-- Native Host 当前脚本为 macOS 方案
+## 中文
+
+### 核心亮点
+
+- 一键导出 Grok 当前对话为 Markdown。
+- 支持 TLDR 摘要模式与原文模式。
+- 支持本地 Claude Code 与云模型（OpenAI / Claude / Kimi / 智谱）。
+- 支持多语言摘要（简中 / 繁中 / English / 日本語 / 한국어）。
+- 支持弹窗界面语言切换（中文 / English）。
+- 支持主题模式（自动 / 浅色 / 深色），覆盖弹窗与导出卡片。
+- 支持通过 Native Helper 自定义保存路径（默认：`Downloads/grok-chat-bookmark/`）。
+- API Key 使用 AES-GCM 在本地加密存储，不会同步。
+
+### 功能特点
+
+- 在 Grok 对话页一键导出当前对话。
+- AI 模式下自动生成结构化 TLDR：`Key Points / Step-by-Step / Fact Check (1-10) / Open Questions`。
+- AI 开关默认开启，可一键关闭摘要。
+- 原文模式可跳过 AI 摘要，仅保存原文 + 元数据。
+- 支持自定义 Base URL（代理/私有网关）。
+- 深度提取：导出前自动展开“Show more / 显示更多”等折叠内容。
+- 卡片堆叠：连续导出时，页面右下角卡片可叠加显示。
+- 历史记录：导出结果自动保存，可在弹窗历史页回看。
+- Markdown 归档包含 TLDR、原文、Metadata 与 Referenced Links。
+
+### 安装
+
+1. 打开 `chrome://extensions/`。
+2. 开启右上角 **开发者模式**。
+3. 点击 **加载已解压的扩展程序**。
+4. 选择你本地的 `grok-chat-bookmark` 项目目录。
+
+### 默认流程（推荐）
+
+默认模式为 `Claude Code`，无需 API Key。
+
+1. 安装 Claude Code CLI：
+
+```bash
+npm install -g @anthropic-ai/claude-code
+claude login
+```
+
+2. 安装 Native Host（一次即可）：
+
+```bash
+cd "<你的项目目录>/grok-chat-bookmark/native-host"
+bash install-macos.sh <你的扩展ID>
+```
+
+3. 重启浏览器。
+4. 打开任意 Grok 对话页面。
+5. 点击扩展图标 -> **导出当前对话**。
+
+输出路径：
+
+```text
+<你选择的目录>/<folderName>/<timestamp>_<title>.md
+```
+
+默认 `folderName` 为 `grok-chat-bookmark`。
+
+### 自定义保存路径（可选）
+
+默认保存到 `Downloads/grok-chat-bookmark/`。
+
+如需保存到其他目录：
+
+1. 在高级设置点击 **一键下载安装脚本**。
+2. 运行 `bash ~/Downloads/install-btl-native.sh`。
+3. 重启浏览器。
+4. 在高级设置点击 **选择文件夹**。
+
+### 云模型模式
+
+如果不使用 Claude Code，可切换云模型模式：
+
+1. 保持 `AI 开关` 开启，并选择 `TLDR` 模式。
+2. 选择摘要语言与模型提供方。
+3. 填写 API Key，Model/Base URL 可选。
+4. 保存设置并导出。
+
+### 项目结构
+
+```text
+grok-chat-bookmark/
+├── manifest.json
+├── background.js
+├── content.js
+├── content.css
+├── popup.html
+├── popup.css
+├── popup.js
+├── icons/
+└── native-host/
+    ├── grok_file_writer.py
+    └── install-macos.sh
+```
