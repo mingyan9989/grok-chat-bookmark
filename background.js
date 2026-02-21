@@ -1,4 +1,4 @@
-const NATIVE_HOST_NAME = 'com.grok.bookmark_writer';
+const NATIVE_HOST_NAME = 'com.grok.chat_bookmark_writer';
 
 const PROVIDER_DEFAULT_MODELS = {
   openai: 'gpt-4o-mini',

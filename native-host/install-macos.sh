@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-HOST_NAME="com.grok.bookmark_writer"
+HOST_NAME="com.grok.chat_bookmark_writer"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 HOST_PATH="$SCRIPT_DIR/grok_file_writer.py"
 
