@@ -44,12 +44,23 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 async function routeMessage(message) {
   switch (message?.type) {
+    case 'PING_NATIVE_HOST':
+      return pingNativeHost();
     case 'PICK_FOLDER':
       return pickAndSaveFolder();
     case 'EXPORT_CURRENT_GROK_CHAT':
       return exportCurrentGrokChat();
     default:
       throw new Error('Unknown message type.');
+  }
+}
+
+async function pingNativeHost() {
+  try {
+    const result = await sendNativeMessage({ action: 'ping' });
+    return { success: !!result?.success, version: result?.version || '' };
+  } catch (error) {
+    return { success: false, version: '' };
   }
 }
 

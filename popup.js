@@ -24,6 +24,7 @@ const exportModeEl = document.getElementById('exportMode');
 const providerEl = document.getElementById('provider');
 const apiFieldsEl = document.getElementById('apiFields');
 const folderPathEl = document.getElementById('folderPath');
+let nativeHostAvailable = false;
 
 init().catch((error) => {
   setStatus(error.message, true);
@@ -32,6 +33,7 @@ init().catch((error) => {
 document.getElementById('saveBtn').addEventListener('click', onSave);
 document.getElementById('exportBtn').addEventListener('click', onExport);
 document.getElementById('pickFolder').addEventListener('click', onPickFolder);
+document.getElementById('clearFolder').addEventListener('click', onClearFolder);
 document.getElementById('clearHistoryBtn').addEventListener('click', onClearHistory);
 providerEl.addEventListener('change', syncProviderVisibility);
 aiEnabledEl.addEventListener('change', syncProviderVisibility);
@@ -41,6 +43,7 @@ document.querySelectorAll('.tab-btn').forEach((btn) => {
 });
 
 async function init() {
+  nativeHostAvailable = await checkNativeHost();
   const settings = await loadSettings();
 
   aiEnabledEl.checked = !!settings.aiEnabled;
@@ -53,6 +56,7 @@ async function init() {
   document.getElementById('useDownloadFallback').checked = !!settings.useDownloadFallback;
 
   renderFolderPath(settings.baseFolderPath);
+  updateFolderHint();
   syncProviderVisibility();
   await loadHistory();
 }
@@ -79,14 +83,26 @@ async function onSave() {
 }
 
 async function onPickFolder() {
+  if (!nativeHostAvailable) {
+    setStatus('未检测到 Native Helper，请先按 README 安装。', true);
+    return;
+  }
   try {
     setStatus('正在打开文件夹选择器...');
     const result = await sendMessage({ type: 'PICK_FOLDER' });
     renderFolderPath(result.baseFolderPath);
+    updateFolderHint();
     setStatus('已更新 Claude Code 根目录。');
   } catch (error) {
     setStatus(error.message, true);
   }
+}
+
+async function onClearFolder() {
+  await chrome.storage.sync.remove(['baseFolderPath']);
+  renderFolderPath('');
+  updateFolderHint();
+  setStatus('已清除自定义目录，将使用下载回退。');
 }
 
 async function onExport() {
@@ -169,11 +185,14 @@ async function loadSettings() {
 }
 
 function renderFolderPath(path) {
+  const clearBtn = document.getElementById('clearFolder');
   if (!path) {
     folderPathEl.textContent = '未选择（首次导出会提示你选择）';
+    clearBtn.classList.add('hidden');
     return;
   }
   folderPathEl.textContent = path;
+  clearBtn.classList.remove('hidden');
 }
 
 function setStatus(text, isError = false) {
@@ -197,6 +216,24 @@ function sendMessage(payload) {
       resolve(response);
     });
   });
+}
+
+async function checkNativeHost() {
+  try {
+    const result = await sendMessage({ type: 'PING_NATIVE_HOST' });
+    return !!result.success;
+  } catch (error) {
+    return false;
+  }
+}
+
+function updateFolderHint() {
+  const hint = document.getElementById('folderHint');
+  if (nativeHostAvailable) {
+    hint.textContent = 'Native Helper 已就绪：可写入你选择的本地目录。';
+  } else {
+    hint.textContent = '未安装 Native Helper：将回退保存到浏览器下载目录。';
+  }
 }
 
 function switchTab(name) {
