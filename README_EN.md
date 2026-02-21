@@ -20,6 +20,7 @@
 - Markdown archive includes TLDR + original conversation with metadata/referenced links
 - Custom save path via Native Helper with select/clear folder flow
 - Multi-language summary: Simplified Chinese / Traditional Chinese / English / Japanese / Korean
+- Theme support: auto/light/dark modes for popup and export cards
 - Custom base folder (Claude Code root)
 - Custom subfolder name (default: `grok bookmark`)
 - Download fallback when native write fails

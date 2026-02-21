@@ -20,6 +20,7 @@
 - Markdown 归档：AI 模式导出 `TLDR + 原文`，并附带 Metadata/Referenced Links
 - 自定义保存路径：通过 Native Helper 可选择任意本地目录并支持清空重选
 - 多语言摘要：支持简中 / 繁中 / English / 日本語 / 한국어
+- 深色模式：支持自动/浅色/深色三档切换（弹窗与导出卡片）
 - 自定义目录：可指定 Claude Code 根目录
 - 自定义子文件夹名：默认 `grok bookmark`，可改成任何名字
 - 失败回退：本地写入失败时可自动回退到浏览器下载

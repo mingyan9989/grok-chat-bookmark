@@ -19,6 +19,7 @@ const DEFAULT_SETTINGS = {
   aiEnabled: true,
   exportMode: 'tldr',
   language: 'zh-CN',
+  theme: 'auto',
   provider: 'local-claude',
   apiKey: '',
   baseUrl: '',
@@ -107,7 +108,8 @@ async function exportCurrentGrokChat() {
         mode,
         method: 'native',
         filePath: saved.path,
-        preview
+        preview,
+        theme: settings.theme || 'auto'
       });
       await saveHistoryEntry({
         title: chat.title || 'Grok Chat',
@@ -136,7 +138,8 @@ async function exportCurrentGrokChat() {
     mode,
     method: 'download',
     filename,
-    preview
+    preview,
+    theme: settings.theme || 'auto'
   });
   await saveHistoryEntry({
     title: chat.title || 'Grok Chat',

@@ -300,7 +300,7 @@ function sleep(ms) {
 }
 
 function showExportCard(payload) {
-  const root = ensureCardRoot();
+  const root = ensureCardRoot(payload.theme || 'auto');
   const card = document.createElement('div');
   card.className = 'grok-bookmark-card';
 
@@ -353,14 +353,16 @@ function showExportCard(payload) {
   }, 9000);
 }
 
-function ensureCardRoot() {
+function ensureCardRoot(theme) {
   let root = document.getElementById('grok-bookmark-stack');
   if (root) {
+    root.setAttribute('data-theme', theme || 'auto');
     return root;
   }
 
   root = document.createElement('div');
   root.id = 'grok-bookmark-stack';
+  root.setAttribute('data-theme', theme || 'auto');
   document.body.appendChild(root);
   return root;
 }

@@ -82,31 +82,57 @@
   }
 }
 
+#grok-bookmark-stack[data-theme='dark'] .grok-bookmark-card {
+  background: #0f172a;
+  border-color: rgba(148, 163, 184, 0.35);
+  box-shadow: 0 10px 28px rgba(2, 6, 23, 0.55);
+}
+
+#grok-bookmark-stack[data-theme='dark'] .grok-bookmark-title {
+  color: #f8fafc;
+}
+
+#grok-bookmark-stack[data-theme='dark'] .grok-bookmark-meta {
+  color: #cbd5e1;
+}
+
+#grok-bookmark-stack[data-theme='dark'] .grok-bookmark-preview {
+  background: #111827;
+  color: #e5e7eb;
+}
+
+#grok-bookmark-stack[data-theme='dark'] .grok-bookmark-close {
+  background: #111827;
+  border-color: #334155;
+  color: #cbd5e1;
+}
+
 @media (prefers-color-scheme: dark) {
-  .grok-bookmark-card {
+  #grok-bookmark-stack[data-theme='auto'] .grok-bookmark-card {
     background: #0f172a;
     border-color: rgba(148, 163, 184, 0.35);
     box-shadow: 0 10px 28px rgba(2, 6, 23, 0.55);
   }
 
-  .grok-bookmark-title {
+  #grok-bookmark-stack[data-theme='auto'] .grok-bookmark-title {
     color: #f8fafc;
   }
 
-  .grok-bookmark-meta {
+  #grok-bookmark-stack[data-theme='auto'] .grok-bookmark-meta {
     color: #cbd5e1;
   }
 
-  .grok-bookmark-preview {
+  #grok-bookmark-stack[data-theme='auto'] .grok-bookmark-preview {
     background: #111827;
     color: #e5e7eb;
   }
 
-  .grok-bookmark-close {
+  #grok-bookmark-stack[data-theme='auto'] .grok-bookmark-close {
     background: #111827;
     border-color: #334155;
     color: #cbd5e1;
   }
+
 }
 
 @keyframes grok-bookmark-in {

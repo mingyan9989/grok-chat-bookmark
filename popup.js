@@ -2,6 +2,7 @@ const DEFAULTS = {
   aiEnabled: true,
   exportMode: 'tldr',
   language: 'zh-CN',
+  theme: 'auto',
   provider: 'local-claude',
   apiKey: '',
   baseUrl: '',
@@ -26,6 +27,7 @@ const languageEl = document.getElementById('language');
 const providerEl = document.getElementById('provider');
 const apiFieldsEl = document.getElementById('apiFields');
 const folderPathEl = document.getElementById('folderPath');
+const themeBtnEl = document.getElementById('themeToggle');
 let nativeHostAvailable = false;
 
 init().catch((error) => {
@@ -37,6 +39,7 @@ document.getElementById('exportBtn').addEventListener('click', onExport);
 document.getElementById('pickFolder').addEventListener('click', onPickFolder);
 document.getElementById('clearFolder').addEventListener('click', onClearFolder);
 document.getElementById('clearHistoryBtn').addEventListener('click', onClearHistory);
+themeBtnEl.addEventListener('click', cycleTheme);
 providerEl.addEventListener('change', syncProviderVisibility);
 aiEnabledEl.addEventListener('change', syncProviderVisibility);
 exportModeEl.addEventListener('change', syncProviderVisibility);
@@ -48,6 +51,7 @@ async function init() {
   nativeHostAvailable = await checkNativeHost();
   const settings = await loadSettings();
 
+  applyTheme(settings.theme || 'auto');
   aiEnabledEl.checked = !!settings.aiEnabled;
   exportModeEl.value = settings.exportMode;
   languageEl.value = settings.language || DEFAULTS.language;
@@ -135,6 +139,7 @@ function collectSettings() {
     aiEnabled: !!aiEnabledEl.checked,
     exportMode: exportModeEl.value,
     language: languageEl.value,
+    theme: document.documentElement.getAttribute('data-theme') || 'auto',
     provider,
     apiKey: (document.getElementById('apiKey').value || '').trim(),
     baseUrl: '',
@@ -238,6 +243,23 @@ function updateFolderHint() {
   } else {
     hint.textContent = '未安装 Native Helper：将回退保存到浏览器下载目录。';
   }
+}
+
+function applyTheme(theme) {
+  const resolved = ['auto', 'light', 'dark'].includes(theme) ? theme : 'auto';
+  document.documentElement.setAttribute('data-theme', resolved);
+  document.body.setAttribute('data-theme', resolved);
+  const map = { auto: '自动', light: '浅色', dark: '深色' };
+  themeBtnEl.textContent = `主题: ${map[resolved] || '自动'}`;
+}
+
+function cycleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'auto';
+  const order = ['auto', 'light', 'dark'];
+  const idx = order.indexOf(current);
+  const next = order[(idx + 1) % order.length];
+  applyTheme(next);
+  chrome.storage.sync.set({ theme: next });
 }
 
 function switchTab(name) {
