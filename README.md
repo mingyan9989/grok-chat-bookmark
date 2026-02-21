@@ -29,10 +29,16 @@ A Chrome extension that exports the current Grok conversation to Markdown with o
 
 ### Installation
 
-1. Open `chrome://extensions/`.
-2. Enable **Developer mode**.
-3. Click **Load unpacked**.
-4. Select your local `grok-chat-bookmark` project folder.
+1. Download or clone this repository:
+
+```bash
+git clone https://github.com/mingyan9989/grok-chat-bookmark.git
+```
+
+2. Open `chrome://extensions/`.
+3. Enable **Developer mode**.
+4. Click **Load unpacked**.
+5. Select your local `grok-chat-bookmark` project folder.
 
 ### Default Workflow (Recommended)
 
@@ -130,10 +136,16 @@ grok-chat-bookmark/
 
 ### 安装
 
-1. 打开 `chrome://extensions/`。
-2. 开启右上角 **开发者模式**。
-3. 点击 **加载已解压的扩展程序**。
-4. 选择你本地的 `grok-chat-bookmark` 项目目录。
+1. 下载或克隆本仓库：
+
+```bash
+git clone https://github.com/mingyan9989/grok-chat-bookmark.git
+```
+
+2. 打开 `chrome://extensions/`。
+3. 开启右上角 **开发者模式**。
+4. 点击 **加载已解压的扩展程序**。
+5. 选择你本地的 `grok-chat-bookmark` 项目目录。
 
 ### 默认流程（推荐）
 
