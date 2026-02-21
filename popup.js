@@ -1,4 +1,6 @@
 const DEFAULTS = {
+  aiEnabled: true,
+  exportMode: 'tldr',
   provider: 'local-claude',
   apiEndpoint: 'https://api.openai.com/v1/chat/completions',
   apiKey: '',
@@ -9,6 +11,8 @@ const DEFAULTS = {
 };
 
 const statusEl = document.getElementById('status');
+const aiEnabledEl = document.getElementById('aiEnabled');
+const exportModeEl = document.getElementById('exportMode');
 const providerEl = document.getElementById('provider');
 const apiFieldsEl = document.getElementById('apiFields');
 const folderPathEl = document.getElementById('folderPath');
@@ -21,10 +25,14 @@ document.getElementById('saveBtn').addEventListener('click', onSave);
 document.getElementById('exportBtn').addEventListener('click', onExport);
 document.getElementById('pickFolder').addEventListener('click', onPickFolder);
 providerEl.addEventListener('change', syncProviderVisibility);
+aiEnabledEl.addEventListener('change', syncProviderVisibility);
+exportModeEl.addEventListener('change', syncProviderVisibility);
 
 async function init() {
   const settings = await loadSettings();
 
+  aiEnabledEl.checked = !!settings.aiEnabled;
+  exportModeEl.value = settings.exportMode;
   providerEl.value = settings.provider;
   document.getElementById('apiEndpoint').value = settings.apiEndpoint;
   document.getElementById('apiKey').value = settings.apiKey;
@@ -38,7 +46,12 @@ async function init() {
 
 function syncProviderVisibility() {
   const useCustomApi = providerEl.value === 'custom-api';
-  apiFieldsEl.classList.toggle('hidden', !useCustomApi);
+  const aiEnabled = !!aiEnabledEl.checked;
+  const useTldr = exportModeEl.value === 'tldr';
+  const showApi = aiEnabled && useTldr && useCustomApi;
+
+  providerEl.disabled = !(aiEnabled && useTldr);
+  apiFieldsEl.classList.toggle('hidden', !showApi);
 }
 
 async function onSave() {
@@ -85,6 +98,8 @@ function collectSettings() {
   const folderName = (document.getElementById('folderName').value || '').trim() || DEFAULTS.folderName;
 
   const settings = {
+    aiEnabled: !!aiEnabledEl.checked,
+    exportMode: exportModeEl.value,
     provider,
     apiEndpoint: (document.getElementById('apiEndpoint').value || '').trim() || DEFAULTS.apiEndpoint,
     apiKey: (document.getElementById('apiKey').value || '').trim(),
@@ -93,7 +108,7 @@ function collectSettings() {
     useDownloadFallback: !!document.getElementById('useDownloadFallback').checked
   };
 
-  if (provider === 'custom-api' && !settings.apiEndpoint) {
+  if (settings.aiEnabled && settings.exportMode === 'tldr' && provider === 'custom-api' && !settings.apiEndpoint) {
     throw new Error('Custom API 模式需要填写 API Endpoint。');
   }
 

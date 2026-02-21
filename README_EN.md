@@ -8,6 +8,8 @@
 
 - One-click export from the current Grok chat page
 - Structured TLDR in AI mode: `Key Points / Step-by-Step / Fact Check(1-10) / Open Questions`
+- AI toggle (enabled by default) to disable summarization instantly
+- Original mode to save raw conversation + metadata without AI TLDR
 - Claude Code flow by default (local Claude CLI, no API key required)
 - Optional custom API mode (`API Endpoint + API Key + Model`)
 - Custom base folder (Claude Code root)

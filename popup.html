@@ -14,11 +14,21 @@
       </section>
 
       <section class="card">
-        <label class="label" for="provider">导出模式</label>
+        <label class="checkbox-row">
+          <input id="aiEnabled" type="checkbox" checked />
+          <span>AI 摘要开关（默认开启）</span>
+        </label>
+
+        <label class="label" for="exportMode">导出模式</label>
+        <select id="exportMode">
+          <option value="tldr">TLDR 摘要模式</option>
+          <option value="original">原文模式（跳过 AI 摘要）</option>
+        </select>
+
+        <label class="label" for="provider">AI 提供方</label>
         <select id="provider">
           <option value="local-claude">Claude Code（默认）</option>
           <option value="custom-api">自定义 API Key</option>
-          <option value="no-ai">仅导出原始 Markdown</option>
         </select>
 
         <div id="apiFields" class="hidden">

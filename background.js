@@ -1,6 +1,8 @@
 const NATIVE_HOST_NAME = 'com.grok.bookmark_writer';
 
 const DEFAULT_SETTINGS = {
+  aiEnabled: true,
+  exportMode: 'tldr',
   provider: 'local-claude',
   apiEndpoint: 'https://api.openai.com/v1/chat/completions',
   apiKey: '',
@@ -62,7 +64,7 @@ async function exportCurrentGrokChat() {
   const chat = extraction.chat;
   const originalConversation = renderOriginalConversation(chat);
   const tldr = await generateStructuredTldr(chat, settings);
-  const finalMarkdown = renderExportMarkdown({ chat, tldr, originalConversation, provider: settings.provider });
+  const finalMarkdown = renderExportMarkdown({ chat, tldr, originalConversation, settings });
   const filename = buildFilename(chat.title || 'grok-chat');
 
   const target = await ensureTargetPath(settings);
@@ -115,14 +117,15 @@ function renderOriginalConversation(chat) {
   return lines.join('\n').trim();
 }
 
-function renderExportMarkdown({ chat, tldr, originalConversation, provider }) {
+function renderExportMarkdown({ chat, tldr, originalConversation, settings }) {
   const lines = [];
 
   lines.push(`# ${chat.title || 'Grok Chat'}`);
   lines.push('');
   lines.push(`> **Source**: ${chat.url || 'unknown'}`);
   lines.push(`> **Exported At**: ${new Date().toISOString()}`);
-  lines.push(`> **Mode**: ${provider === 'no-ai' ? 'Original' : 'AI TLDR'}`);
+  const modeLabel = settings.aiEnabled && settings.exportMode === 'tldr' ? 'AI TLDR' : 'Original';
+  lines.push(`> **Mode**: ${modeLabel}`);
   lines.push('');
   lines.push('---');
   lines.push('');
@@ -145,7 +148,7 @@ function renderExportMarkdown({ chat, tldr, originalConversation, provider }) {
 }
 
 async function generateStructuredTldr(chat, settings) {
-  if (settings.provider === 'no-ai') {
+  if (!settings.aiEnabled || settings.exportMode !== 'tldr' || settings.provider === 'no-ai') {
     return null;
   }
 
