@@ -1,12 +1,26 @@
 const NATIVE_HOST_NAME = 'com.grok.bookmark_writer';
 
+const PROVIDER_DEFAULT_MODELS = {
+  openai: 'gpt-4o-mini',
+  claude: 'claude-sonnet-4-20250514',
+  kimi: 'moonshot-v1-8k',
+  zhipu: 'glm-4-flash',
+  'local-claude': ''
+};
+
+const PROVIDER_DEFAULT_ENDPOINTS = {
+  openai: 'https://api.openai.com/v1/chat/completions',
+  claude: 'https://api.anthropic.com/v1/messages',
+  kimi: 'https://api.moonshot.cn/v1/chat/completions',
+  zhipu: 'https://open.bigmodel.cn/api/paas/v4/chat/completions'
+};
+
 const DEFAULT_SETTINGS = {
   aiEnabled: true,
   exportMode: 'tldr',
   provider: 'local-claude',
-  apiEndpoint: 'https://api.openai.com/v1/chat/completions',
   apiKey: '',
-  apiModel: 'gpt-4o-mini',
+  apiModel: '',
   folderName: 'grok bookmark',
   baseFolderPath: '',
   useDownloadFallback: true
@@ -126,6 +140,7 @@ function renderExportMarkdown({ chat, tldr, originalConversation, settings }) {
   lines.push(`> **Exported At**: ${new Date().toISOString()}`);
   const modeLabel = settings.aiEnabled && settings.exportMode === 'tldr' ? 'AI TLDR' : 'Original';
   lines.push(`> **Mode**: ${modeLabel}`);
+  lines.push(`> **Provider**: ${settings.provider}`);
   lines.push('');
   lines.push('---');
   lines.push('');
@@ -148,39 +163,38 @@ function renderExportMarkdown({ chat, tldr, originalConversation, settings }) {
 }
 
 async function generateStructuredTldr(chat, settings) {
-  if (!settings.aiEnabled || settings.exportMode !== 'tldr' || settings.provider === 'no-ai') {
+  if (!settings.aiEnabled || settings.exportMode !== 'tldr') {
     return null;
   }
 
   const fallback = buildFallbackTldr(chat);
 
   try {
-    if (settings.provider === 'local-claude') {
-      const tldr = await runLocalClaudeSummary(chat);
-      return normalizeSummary(tldr) || fallback;
+    let tldr = '';
+    switch (settings.provider) {
+      case 'local-claude':
+        tldr = await runLocalClaudeSummary(chat);
+        break;
+      case 'claude':
+        tldr = await runClaudeApiSummary(chat, settings);
+        break;
+      case 'openai':
+      case 'kimi':
+      case 'zhipu':
+        tldr = await runOpenAICompatibleSummary(chat, settings.provider, settings);
+        break;
+      default:
+        throw new Error('不支持的模型提供方。');
     }
 
-    if (settings.provider === 'custom-api') {
-      const tldr = await runCustomApiSummary(chat, settings);
-      return normalizeSummary(tldr) || fallback;
-    }
-
-    return fallback;
+    return normalizeSummary(tldr) || fallback;
   } catch (error) {
     return fallback;
   }
 }
 
-async function runLocalClaudeSummary(chat) {
-  const system = [
-    'You are an expert conversation analyst.',
-    'Generate a structured TLDR in markdown.',
-    'Keep facts faithful to the conversation only.',
-    'Always include a Fact Check score from 1 to 10.',
-    'Return markdown only, no preface.'
-  ].join(' ');
-
-  const user = [
+function buildSummaryPrompt(chat) {
+  return [
     'Analyze this Grok conversation and output markdown with exactly these sections:',
     '### Key Points',
     '- bullet list',
@@ -197,11 +211,21 @@ async function runLocalClaudeSummary(chat) {
     '',
     renderOriginalConversation(chat)
   ].join('\n');
+}
+
+async function runLocalClaudeSummary(chat) {
+  const system = [
+    'You are an expert conversation analyst.',
+    'Generate a structured TLDR in markdown.',
+    'Keep facts faithful to the conversation only.',
+    'Always include a Fact Check score from 1 to 10.',
+    'Return markdown only, no preface.'
+  ].join(' ');
 
   const result = await sendNativeMessage({
     action: 'call_claude',
     system,
-    user
+    user: buildSummaryPrompt(chat)
   });
 
   if (!result?.success || !result.text || !result.text.trim()) {
@@ -211,63 +235,100 @@ async function runLocalClaudeSummary(chat) {
   return result.text.trim();
 }
 
-async function runCustomApiSummary(chat, settings) {
-  if (!settings.apiEndpoint) {
-    throw new Error('Custom API 模式需要 API Endpoint。');
-  }
+async function runOpenAICompatibleSummary(chat, provider, settings) {
+  const apiKey = requireApiKey(settings);
+  const endpoint = PROVIDER_DEFAULT_ENDPOINTS[provider];
+  const model = settings.apiModel || PROVIDER_DEFAULT_MODELS[provider];
 
-  const headers = {
-    'Content-Type': 'application/json'
-  };
-
-  if (settings.apiKey) {
-    headers.Authorization = `Bearer ${settings.apiKey}`;
-  }
-
-  const body = {
-    model: settings.apiModel || DEFAULT_SETTINGS.apiModel,
-    temperature: 0.2,
-    messages: [
-      {
-        role: 'system',
-        content:
-          'You are an expert conversation analyst. Return markdown only. Include sections: Key Points, Step-by-Step, Fact Check with Score X/10, and Open Questions.'
-      },
-      {
-        role: 'user',
-        content: [
-          `Conversation Title: ${chat.title || 'Grok Chat'}`,
-          `Conversation URL: ${chat.url || 'unknown'}`,
-          'Please generate structured TLDR with fact check score 1-10.',
-          '',
-          renderOriginalConversation(chat)
-        ].join('\n')
-      }
-    ]
-  };
-
-  const response = await fetch(settings.apiEndpoint, {
+  const response = await fetch(endpoint, {
     method: 'POST',
-    headers,
-    body: JSON.stringify(body)
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model,
+      temperature: 0.2,
+      messages: [
+        {
+          role: 'system',
+          content:
+            'You are an expert conversation analyst. Return markdown only. Include sections: Key Points, Step-by-Step, Fact Check with Score X/10, and Open Questions.'
+        },
+        {
+          role: 'user',
+          content: buildSummaryPrompt(chat)
+        }
+      ]
+    })
   });
 
   if (!response.ok) {
-    throw new Error(`Custom API 请求失败: ${response.status}`);
+    throw new Error(`${provider} API 请求失败: ${response.status}`);
   }
 
   const data = await response.json();
-  const text =
-    data?.choices?.[0]?.message?.content ||
-    data?.output_text ||
-    data?.markdown ||
-    data?.output;
+  const text = data?.choices?.[0]?.message?.content || data?.output_text || data?.markdown || data?.output;
 
   if (typeof text === 'string' && text.trim()) {
     return text.trim();
   }
 
-  throw new Error('Custom API returned empty summary.');
+  throw new Error(`${provider} API 返回内容为空。`);
+}
+
+async function runClaudeApiSummary(chat, settings) {
+  const apiKey = requireApiKey(settings);
+  const endpoint = PROVIDER_DEFAULT_ENDPOINTS.claude;
+  const model = settings.apiModel || PROVIDER_DEFAULT_MODELS.claude;
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 1200,
+      temperature: 0.2,
+      system:
+        'You are an expert conversation analyst. Return markdown only. Include sections: Key Points, Step-by-Step, Fact Check with Score X/10, and Open Questions.',
+      messages: [
+        {
+          role: 'user',
+          content: buildSummaryPrompt(chat)
+        }
+      ]
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Claude API 请求失败: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const text = Array.isArray(data?.content)
+    ? data.content
+        .map((item) => (item && typeof item.text === 'string' ? item.text : ''))
+        .join('\n')
+        .trim()
+    : '';
+
+  if (text) {
+    return text;
+  }
+
+  throw new Error('Claude API 返回内容为空。');
+}
+
+function requireApiKey(settings) {
+  const key = String(settings.apiKey || '').trim();
+  if (!key) {
+    throw new Error('当前模型需要 API Key。');
+  }
+  return key;
 }
 
 function normalizeSummary(summaryText) {

@@ -11,7 +11,8 @@
 - AI 开关：默认开启，可一键关闭 AI 摘要
 - 原文模式：可切换为仅保存原文 + 元数据（跳过 AI 摘要）
 - 默认 Claude Code 流程：默认使用本地 Claude Code CLI（无需 API Key）
-- 可选自定义 API：支持填写 `API Endpoint + API Key + Model`
+- 多模型支持：`OpenAI / Claude / Kimi / 智谱 / 本地 Claude`
+- 可选 API Key：非本地 Claude 模式下可填写 `API Key + Model`
 - 自定义目录：可指定 Claude Code 根目录
 - 自定义子文件夹名：默认 `grok bookmark`，可改成任何名字
 - 失败回退：本地写入失败时可自动回退到浏览器下载
@@ -60,18 +61,18 @@ bash install-macos.sh <你的扩展ID>
 
 其中 `folderName` 默认是 `grok bookmark`。
 
-## 自定义 API 模式
+## 云模型模式
 
-如果不走 Claude Code，可切换到 `自定义 API Key`：
+如果不走 Claude Code，可切换到云模型提供方（OpenAI / Claude / Kimi / 智谱）：
 
-1. 在弹窗把导出模式改成 `自定义 API Key`
-2. 填写：
-- API Endpoint（默认 OpenAI Chat Completions 地址）
+1. 在弹窗保持 `AI 摘要开关` 开启，导出模式选 `TLDR`
+2. 选择 AI 提供方
+3. 填写：
 - API Key
-- Model
-3. 保存设置后导出
+- Model（可留空，使用默认）
+4. 保存设置后导出
 
-说明：自定义 API 只负责润色 Markdown，最终保存路径逻辑不变（优先本地写入，失败可回退下载）。
+说明：保存路径逻辑不变（优先本地写入，失败可回退下载）。
 
 ## 使用流程
 

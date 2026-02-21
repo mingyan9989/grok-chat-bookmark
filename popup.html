@@ -28,18 +28,19 @@
         <label class="label" for="provider">AI 提供方</label>
         <select id="provider">
           <option value="local-claude">Claude Code（默认）</option>
-          <option value="custom-api">自定义 API Key</option>
+          <option value="openai">OpenAI (GPT)</option>
+          <option value="claude">Claude (Anthropic API)</option>
+          <option value="kimi">Kimi (Moonshot)</option>
+          <option value="zhipu">智谱 (GLM)</option>
         </select>
 
         <div id="apiFields" class="hidden">
-          <label class="label" for="apiEndpoint">API Endpoint</label>
-          <input id="apiEndpoint" placeholder="https://api.openai.com/v1/chat/completions" />
-
           <label class="label" for="apiKey">API Key</label>
           <input id="apiKey" type="password" placeholder="sk-..." />
 
           <label class="label" for="apiModel">Model</label>
           <input id="apiModel" placeholder="gpt-4o-mini" />
+          <p id="modelHint" class="label">默认: 自动</p>
         </div>
       </section>
 

@@ -11,7 +11,8 @@
 - AI toggle (enabled by default) to disable summarization instantly
 - Original mode to save raw conversation + metadata without AI TLDR
 - Claude Code flow by default (local Claude CLI, no API key required)
-- Optional custom API mode (`API Endpoint + API Key + Model`)
+- Multi-provider support: `OpenAI / Claude / Kimi / Zhipu / Local Claude`
+- Optional API key mode for cloud providers (`API Key + Model`)
 - Custom base folder (Claude Code root)
 - Custom subfolder name (default: `grok bookmark`)
 - Download fallback when native write fails
@@ -60,18 +61,18 @@ bash install-macos.sh <your-extension-id>
 
 `folderName` defaults to `grok bookmark`.
 
-## Custom API Mode
+## Cloud Provider Mode
 
-If you don't want to use Claude Code mode, switch to `Custom API Key`:
+If you don't want Claude Code mode, switch to a cloud provider (OpenAI / Claude / Kimi / Zhipu):
 
-1. Change provider to `custom-api`
-2. Fill:
-- API Endpoint
+1. Keep `AI toggle` on and select `TLDR` mode
+2. Choose provider
+3. Fill:
 - API Key
-- Model
-3. Save settings and export
+- Model (optional; leave blank to use default)
+4. Save settings and export
 
-Note: custom API is used for markdown polishing. Save behavior stays the same (native write first, download fallback optional).
+Save behavior stays the same (native write first, download fallback optional).
 
 ## Usage
 

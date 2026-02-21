@@ -2,12 +2,19 @@ const DEFAULTS = {
   aiEnabled: true,
   exportMode: 'tldr',
   provider: 'local-claude',
-  apiEndpoint: 'https://api.openai.com/v1/chat/completions',
   apiKey: '',
-  apiModel: 'gpt-4o-mini',
+  apiModel: '',
   folderName: 'grok bookmark',
   baseFolderPath: '',
   useDownloadFallback: true
+};
+
+const DEFAULT_MODELS = {
+  openai: 'gpt-4o-mini',
+  claude: 'claude-sonnet-4-20250514',
+  kimi: 'moonshot-v1-8k',
+  zhipu: 'glm-4-flash',
+  'local-claude': 'claude-code-local'
 };
 
 const statusEl = document.getElementById('status');
@@ -34,7 +41,6 @@ async function init() {
   aiEnabledEl.checked = !!settings.aiEnabled;
   exportModeEl.value = settings.exportMode;
   providerEl.value = settings.provider;
-  document.getElementById('apiEndpoint').value = settings.apiEndpoint;
   document.getElementById('apiKey').value = settings.apiKey;
   document.getElementById('apiModel').value = settings.apiModel;
   document.getElementById('folderName').value = settings.folderName;
@@ -45,13 +51,14 @@ async function init() {
 }
 
 function syncProviderVisibility() {
-  const useCustomApi = providerEl.value === 'custom-api';
   const aiEnabled = !!aiEnabledEl.checked;
   const useTldr = exportModeEl.value === 'tldr';
-  const showApi = aiEnabled && useTldr && useCustomApi;
+  const isLocal = providerEl.value === 'local-claude';
+  const showApi = aiEnabled && useTldr && !isLocal;
 
   providerEl.disabled = !(aiEnabled && useTldr);
   apiFieldsEl.classList.toggle('hidden', !showApi);
+  updateModelHint(providerEl.value);
 }
 
 async function onSave() {
@@ -101,18 +108,22 @@ function collectSettings() {
     aiEnabled: !!aiEnabledEl.checked,
     exportMode: exportModeEl.value,
     provider,
-    apiEndpoint: (document.getElementById('apiEndpoint').value || '').trim() || DEFAULTS.apiEndpoint,
     apiKey: (document.getElementById('apiKey').value || '').trim(),
-    apiModel: (document.getElementById('apiModel').value || '').trim() || DEFAULTS.apiModel,
+    apiModel: (document.getElementById('apiModel').value || '').trim(),
     folderName,
     useDownloadFallback: !!document.getElementById('useDownloadFallback').checked
   };
 
-  if (settings.aiEnabled && settings.exportMode === 'tldr' && provider === 'custom-api' && !settings.apiEndpoint) {
-    throw new Error('Custom API 模式需要填写 API Endpoint。');
+  if (settings.aiEnabled && settings.exportMode === 'tldr' && provider !== 'local-claude' && !settings.apiKey) {
+    throw new Error('当前模型需要填写 API Key。');
   }
 
   return settings;
+}
+
+function updateModelHint(provider) {
+  const hint = DEFAULT_MODELS[provider] || 'auto';
+  document.getElementById('modelHint').textContent = `默认: ${hint}`;
 }
 
 async function loadSettings() {
