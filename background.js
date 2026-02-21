@@ -21,7 +21,6 @@ const DEFAULT_SETTINGS = {
   language: 'zh-CN',
   theme: 'auto',
   provider: 'local-claude',
-  apiKey: '',
   baseUrl: '',
   apiModel: '',
   folderName: 'grok bookmark',
@@ -307,7 +306,7 @@ async function runLocalClaudeSummary(chat, settings) {
 }
 
 async function runOpenAICompatibleSummary(chat, provider, settings) {
-  const apiKey = requireApiKey(settings);
+  const apiKey = await requireApiKey();
   const endpoint = await resolveApiEndpoint(provider, settings.baseUrl);
   const model = settings.apiModel || PROVIDER_DEFAULT_MODELS[provider];
 
@@ -349,7 +348,7 @@ async function runOpenAICompatibleSummary(chat, provider, settings) {
 }
 
 async function runClaudeApiSummary(chat, settings) {
-  const apiKey = requireApiKey(settings);
+  const apiKey = await requireApiKey();
   const endpoint = await resolveApiEndpoint('claude', settings.baseUrl);
   const model = settings.apiModel || PROVIDER_DEFAULT_MODELS.claude;
 
@@ -394,12 +393,45 @@ async function runClaudeApiSummary(chat, settings) {
   throw new Error('Claude API 返回内容为空。');
 }
 
-function requireApiKey(settings) {
-  const key = String(settings.apiKey || '').trim();
+async function requireApiKey() {
+  const localData = await chrome.storage.local.get('encryptedApiKey');
+  if (!localData.encryptedApiKey) {
+    throw new Error('当前模型需要 API Key。');
+  }
+
+  let key = '';
+  try {
+    key = await decryptApiKey(localData.encryptedApiKey);
+  } catch (error) {
+    throw new Error('API Key 解密失败，请重新保存 API Key。');
+  }
+
   if (!key) {
     throw new Error('当前模型需要 API Key。');
   }
   return key;
+}
+
+async function getOrCreateEncryptionKey() {
+  const stored = await chrome.storage.local.get('encKey');
+  if (stored.encKey) {
+    return crypto.subtle.importKey('raw', new Uint8Array(stored.encKey), 'AES-GCM', false, ['encrypt', 'decrypt']);
+  }
+
+  const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+  const exported = await crypto.subtle.exportKey('raw', key);
+  await chrome.storage.local.set({ encKey: Array.from(new Uint8Array(exported)) });
+  return key;
+}
+
+async function decryptApiKey(encrypted) {
+  const key = await getOrCreateEncryptionKey();
+  const decrypted = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv: new Uint8Array(encrypted.iv) },
+    key,
+    new Uint8Array(encrypted.data)
+  );
+  return new TextDecoder().decode(decrypted);
 }
 
 function getLanguageName(code) {

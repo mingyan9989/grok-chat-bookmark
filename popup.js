@@ -4,7 +4,6 @@ const DEFAULTS = {
   language: 'zh-CN',
   theme: 'auto',
   provider: 'local-claude',
-  apiKey: '',
   baseUrl: '',
   apiModel: '',
   folderName: 'grok bookmark',
@@ -49,14 +48,16 @@ document.querySelectorAll('.tab-btn').forEach((btn) => {
 
 async function init() {
   nativeHostAvailable = await checkNativeHost();
+  await migratePlaintextApiKeyFromSync();
   const settings = await loadSettings();
+  const apiKeyPlain = await loadDecryptedApiKey();
 
   applyTheme(settings.theme || 'auto');
   aiEnabledEl.checked = !!settings.aiEnabled;
   exportModeEl.value = settings.exportMode;
   languageEl.value = settings.language || DEFAULTS.language;
   providerEl.value = settings.provider;
-  document.getElementById('apiKey').value = settings.apiKey;
+  document.getElementById('apiKey').value = apiKeyPlain;
   document.getElementById('baseUrl').value = settings.baseUrl || '';
   document.getElementById('apiModel').value = settings.apiModel;
   document.getElementById('folderName').value = settings.folderName;
@@ -82,7 +83,10 @@ function syncProviderVisibility() {
 async function onSave() {
   try {
     const next = collectSettings();
-    await chrome.storage.sync.set(next);
+    await validateApiKeyRequirement(next);
+    await persistApiKey(next.apiKey);
+    const syncPayload = stripSensitiveSettings(next);
+    await chrome.storage.sync.set(syncPayload);
     setStatus('设置已保存。');
   } catch (error) {
     setStatus(error.message, true);
@@ -115,7 +119,10 @@ async function onClearFolder() {
 async function onExport() {
   try {
     const next = collectSettings();
-    await chrome.storage.sync.set(next);
+    await validateApiKeyRequirement(next);
+    await persistApiKey(next.apiKey);
+    const syncPayload = stripSensitiveSettings(next);
+    await chrome.storage.sync.set(syncPayload);
 
     setStatus('正在导出当前 Grok 对话...');
     const result = await sendMessage({ type: 'EXPORT_CURRENT_GROK_CHAT' });
@@ -157,10 +164,6 @@ function collectSettings() {
     settings.baseUrl = normalized;
   }
 
-  if (settings.aiEnabled && settings.exportMode === 'tldr' && provider !== 'local-claude' && !settings.apiKey) {
-    throw new Error('当前模型需要填写 API Key。');
-  }
-
   return settings;
 }
 
@@ -185,12 +188,61 @@ function normalizeBaseUrl(value) {
   }
 }
 
+function stripSensitiveSettings(settings) {
+  const next = { ...settings };
+  delete next.apiKey;
+  return next;
+}
+
+async function validateApiKeyRequirement(settings) {
+  const needKey = settings.aiEnabled && settings.exportMode === 'tldr' && settings.provider !== 'local-claude';
+  if (!needKey) return;
+
+  if (settings.apiKey) return;
+
+  const localData = await chrome.storage.local.get('encryptedApiKey');
+  if (!localData.encryptedApiKey) {
+    throw new Error('当前模型需要填写 API Key。');
+  }
+}
+
 async function loadSettings() {
   const loaded = await chrome.storage.sync.get(Object.keys(DEFAULTS));
   return {
     ...DEFAULTS,
     ...loaded
   };
+}
+
+async function migratePlaintextApiKeyFromSync() {
+  const syncData = await chrome.storage.sync.get({ apiKey: '' });
+  if (!syncData.apiKey) {
+    return;
+  }
+
+  const encrypted = await encryptApiKey(syncData.apiKey);
+  await chrome.storage.local.set({ encryptedApiKey: encrypted });
+  await chrome.storage.sync.remove('apiKey');
+}
+
+async function loadDecryptedApiKey() {
+  const localData = await chrome.storage.local.get('encryptedApiKey');
+  if (!localData.encryptedApiKey) {
+    return '';
+  }
+
+  try {
+    return await decryptApiKey(localData.encryptedApiKey);
+  } catch (error) {
+    return '';
+  }
+}
+
+async function persistApiKey(apiKeyPlain) {
+  const value = String(apiKeyPlain || '').trim();
+  if (!value) return;
+  const encrypted = await encryptApiKey(value);
+  await chrome.storage.local.set({ encryptedApiKey: encrypted });
 }
 
 function renderFolderPath(path) {
@@ -260,6 +312,39 @@ function cycleTheme() {
   const next = order[(idx + 1) % order.length];
   applyTheme(next);
   chrome.storage.sync.set({ theme: next });
+}
+
+async function getOrCreateEncryptionKey() {
+  const stored = await chrome.storage.local.get('encKey');
+  if (stored.encKey) {
+    return crypto.subtle.importKey('raw', new Uint8Array(stored.encKey), 'AES-GCM', false, ['encrypt', 'decrypt']);
+  }
+
+  const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+  const exported = await crypto.subtle.exportKey('raw', key);
+  await chrome.storage.local.set({ encKey: Array.from(new Uint8Array(exported)) });
+  return key;
+}
+
+async function encryptApiKey(plaintext) {
+  const key = await getOrCreateEncryptionKey();
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encoded = new TextEncoder().encode(plaintext);
+  const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, encoded);
+  return {
+    iv: Array.from(iv),
+    data: Array.from(new Uint8Array(cipher))
+  };
+}
+
+async function decryptApiKey(encrypted) {
+  const key = await getOrCreateEncryptionKey();
+  const decrypted = await crypto.subtle.decrypt(
+    { name: 'AES-GCM', iv: new Uint8Array(encrypted.iv) },
+    key,
+    new Uint8Array(encrypted.data)
+  );
+  return new TextDecoder().decode(decrypted);
 }
 
 function switchTab(name) {
