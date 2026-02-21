@@ -2,6 +2,8 @@
 
 > 一个 Chrome 扩展：点击一次按钮，把当前 Grok 对话导出为 Markdown，并优先保存到你的 Claude Code 目录。
 
+中文 | [English](README_EN.md)
+
 ## 功能特点
 
 - 一键导出：在 Grok 对话页点击扩展按钮，立即导出当前对话
