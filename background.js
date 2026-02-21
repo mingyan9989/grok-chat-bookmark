@@ -20,6 +20,7 @@ const DEFAULT_SETTINGS = {
   exportMode: 'tldr',
   provider: 'local-claude',
   apiKey: '',
+  baseUrl: '',
   apiModel: '',
   folderName: 'grok bookmark',
   baseFolderPath: '',
@@ -237,7 +238,7 @@ async function runLocalClaudeSummary(chat) {
 
 async function runOpenAICompatibleSummary(chat, provider, settings) {
   const apiKey = requireApiKey(settings);
-  const endpoint = PROVIDER_DEFAULT_ENDPOINTS[provider];
+  const endpoint = await resolveApiEndpoint(provider, settings.baseUrl);
   const model = settings.apiModel || PROVIDER_DEFAULT_MODELS[provider];
 
   const response = await fetch(endpoint, {
@@ -279,7 +280,7 @@ async function runOpenAICompatibleSummary(chat, provider, settings) {
 
 async function runClaudeApiSummary(chat, settings) {
   const apiKey = requireApiKey(settings);
-  const endpoint = PROVIDER_DEFAULT_ENDPOINTS.claude;
+  const endpoint = await resolveApiEndpoint('claude', settings.baseUrl);
   const model = settings.apiModel || PROVIDER_DEFAULT_MODELS.claude;
 
   const response = await fetch(endpoint, {
@@ -329,6 +330,33 @@ function requireApiKey(settings) {
     throw new Error('当前模型需要 API Key。');
   }
   return key;
+}
+
+async function resolveApiEndpoint(provider, baseUrl) {
+  if (!baseUrl) {
+    return PROVIDER_DEFAULT_ENDPOINTS[provider];
+  }
+
+  let parsed;
+  try {
+    parsed = new URL(baseUrl);
+  } catch (error) {
+    throw new Error('Base URL 格式无效，请在设置中重新填写。');
+  }
+
+  const path = parsed.pathname.replace(/\/+$/, '');
+  if (/\/v\d+\/(chat\/completions|messages)$/i.test(path)) {
+    return parsed.origin + path;
+  }
+
+  const suffix = provider === 'claude' ? '/messages' : '/chat/completions';
+  if (/\/v\d+$/i.test(path)) {
+    return parsed.origin + path + suffix;
+  }
+  if (!path || path === '/') {
+    return parsed.origin + '/v1' + suffix;
+  }
+  return parsed.origin + path + suffix;
 }
 
 function normalizeSummary(summaryText) {

@@ -13,6 +13,7 @@
 - Claude Code flow by default (local Claude CLI, no API key required)
 - Multi-provider support: `OpenAI / Claude / Kimi / Zhipu / Local Claude`
 - Optional API key mode for cloud providers (`API Key + Model`)
+- Custom Base URL support for proxy/private gateway routing
 - Custom base folder (Claude Code root)
 - Custom subfolder name (default: `grok bookmark`)
 - Download fallback when native write fails
@@ -70,6 +71,7 @@ If you don't want Claude Code mode, switch to a cloud provider (OpenAI / Claude 
 3. Fill:
 - API Key
 - Model (optional; leave blank to use default)
+- Base URL (optional; blank uses official default endpoint)
 4. Save settings and export
 
 Save behavior stays the same (native write first, download fallback optional).

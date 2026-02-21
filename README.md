@@ -13,6 +13,7 @@
 - 默认 Claude Code 流程：默认使用本地 Claude Code CLI（无需 API Key）
 - 多模型支持：`OpenAI / Claude / Kimi / 智谱 / 本地 Claude`
 - 可选 API Key：非本地 Claude 模式下可填写 `API Key + Model`
+- 自定义 Base URL：可配置代理或私有网关地址
 - 自定义目录：可指定 Claude Code 根目录
 - 自定义子文件夹名：默认 `grok bookmark`，可改成任何名字
 - 失败回退：本地写入失败时可自动回退到浏览器下载
@@ -70,6 +71,7 @@ bash install-macos.sh <你的扩展ID>
 3. 填写：
 - API Key
 - Model（可留空，使用默认）
+- Base URL（可留空，留空即走官方默认接口）
 4. 保存设置后导出
 
 说明：保存路径逻辑不变（优先本地写入，失败可回退下载）。

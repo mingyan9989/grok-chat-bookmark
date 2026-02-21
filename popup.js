@@ -3,6 +3,7 @@ const DEFAULTS = {
   exportMode: 'tldr',
   provider: 'local-claude',
   apiKey: '',
+  baseUrl: '',
   apiModel: '',
   folderName: 'grok bookmark',
   baseFolderPath: '',
@@ -42,6 +43,7 @@ async function init() {
   exportModeEl.value = settings.exportMode;
   providerEl.value = settings.provider;
   document.getElementById('apiKey').value = settings.apiKey;
+  document.getElementById('baseUrl').value = settings.baseUrl || '';
   document.getElementById('apiModel').value = settings.apiModel;
   document.getElementById('folderName').value = settings.folderName;
   document.getElementById('useDownloadFallback').checked = !!settings.useDownloadFallback;
@@ -109,10 +111,20 @@ function collectSettings() {
     exportMode: exportModeEl.value,
     provider,
     apiKey: (document.getElementById('apiKey').value || '').trim(),
+    baseUrl: '',
     apiModel: (document.getElementById('apiModel').value || '').trim(),
     folderName,
     useDownloadFallback: !!document.getElementById('useDownloadFallback').checked
   };
+
+  const baseUrlInput = (document.getElementById('baseUrl').value || '').trim();
+  if (baseUrlInput) {
+    const normalized = normalizeBaseUrl(baseUrlInput);
+    if (!normalized) {
+      throw new Error('Base URL 格式无效。');
+    }
+    settings.baseUrl = normalized;
+  }
 
   if (settings.aiEnabled && settings.exportMode === 'tldr' && provider !== 'local-claude' && !settings.apiKey) {
     throw new Error('当前模型需要填写 API Key。');
@@ -124,6 +136,22 @@ function collectSettings() {
 function updateModelHint(provider) {
   const hint = DEFAULT_MODELS[provider] || 'auto';
   document.getElementById('modelHint').textContent = `默认: ${hint}`;
+}
+
+function normalizeBaseUrl(value) {
+  try {
+    let normalizedInput = value;
+    if (!/^[a-z][a-z0-9+.-]*:\/\//i.test(normalizedInput)) {
+      normalizedInput = `https://${normalizedInput}`;
+    }
+    const parsed = new URL(normalizedInput);
+    if (!/^https?:$/.test(parsed.protocol)) {
+      return '';
+    }
+    return `${parsed.origin}${parsed.pathname.replace(/\/+$/, '')}`;
+  } catch (error) {
+    return '';
+  }
 }
 
 async function loadSettings() {
