@@ -3,17 +3,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return false;
   }
 
-  try {
-    const chat = extractCurrentChat();
-    sendResponse({ ok: true, chat });
-  } catch (error) {
-    sendResponse({ ok: false, error: error.message });
-  }
+  extractCurrentChat()
+    .then((chat) => sendResponse({ ok: true, chat }))
+    .catch((error) => sendResponse({ ok: false, error: error.message }));
 
   return true;
 });
 
-function extractCurrentChat() {
+async function extractCurrentChat() {
+  await expandCollapsedContent();
+
   const title = getChatTitle();
   const url = window.location.href;
   const nodes = findMessageNodes();
@@ -32,6 +31,72 @@ function extractCurrentChat() {
     url,
     messages
   };
+}
+
+async function expandCollapsedContent() {
+  const patterns = [
+    /show\s*more/i,
+    /read\s*more/i,
+    /see\s*more/i,
+    /continue\s*reading/i,
+    /expand/i,
+    /显示更多/,
+    /展开/,
+    /继续阅读/,
+    /更多/
+  ];
+
+  const clickableSelectors = [
+    'button',
+    '[role="button"]',
+    'summary',
+    '[data-testid*="expand"]',
+    '[aria-expanded="false"]'
+  ];
+
+  for (let pass = 0; pass < 3; pass += 1) {
+    let clicked = 0;
+
+    clickableSelectors.forEach((selector) => {
+      document.querySelectorAll(selector).forEach((node) => {
+        if (!(node instanceof HTMLElement)) {
+          return;
+        }
+        if (!node.offsetParent) {
+          return;
+        }
+
+        const text = cleanText(node.innerText || node.getAttribute('aria-label') || '');
+        if (!text) {
+          return;
+        }
+
+        if (patterns.some((re) => re.test(text))) {
+          try {
+            node.click();
+            clicked += 1;
+          } catch (error) {
+            // Ignore click failures and continue scanning.
+          }
+        }
+      });
+    });
+
+    document.querySelectorAll('details:not([open])').forEach((node) => {
+      try {
+        node.setAttribute('open', 'open');
+        clicked += 1;
+      } catch (error) {
+        // Ignore.
+      }
+    });
+
+    if (clicked === 0) {
+      break;
+    }
+
+    await sleep(220);
+  }
 }
 
 function getChatTitle() {
@@ -103,7 +168,7 @@ function findMessageNodes() {
     .split(/\n{2,}/)
     .map((line) => line.trim())
     .filter((line) => line.length > 30)
-    .slice(0, 40);
+    .slice(0, 80);
 
   return chunks.map((chunk) => {
     const div = document.createElement('div');
@@ -123,7 +188,7 @@ function normalizeMessages(nodes) {
       return;
     }
 
-    const text = rawText.slice(0, 12000);
+    const text = rawText.slice(0, 24000);
     if (seenText.has(text)) {
       return;
     }
@@ -222,4 +287,8 @@ function isUsefulText(text) {
   }
 
   return true;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

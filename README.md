@@ -14,6 +14,7 @@
 - 多模型支持：`OpenAI / Claude / Kimi / 智谱 / 本地 Claude`
 - 可选 API Key：非本地 Claude 模式下可填写 `API Key + Model`
 - 自定义 Base URL：可配置代理或私有网关地址
+- 深度内容提取：导出前自动展开对话中的“显示更多/Show more”等折叠内容
 - 自定义目录：可指定 Claude Code 根目录
 - 自定义子文件夹名：默认 `grok bookmark`，可改成任何名字
 - 失败回退：本地写入失败时可自动回退到浏览器下载
