@@ -37,6 +37,7 @@ document.getElementById('saveBtn').addEventListener('click', onSave);
 document.getElementById('exportBtn').addEventListener('click', onExport);
 document.getElementById('pickFolder').addEventListener('click', onPickFolder);
 document.getElementById('clearFolder').addEventListener('click', onClearFolder);
+document.getElementById('downloadNativeScript').addEventListener('click', onDownloadNativeScript);
 document.getElementById('clearHistoryBtn').addEventListener('click', onClearHistory);
 themeBtnEl.addEventListener('click', cycleTheme);
 providerEl.addEventListener('change', syncProviderVisibility);
@@ -114,6 +115,24 @@ async function onClearFolder() {
   renderFolderPath('');
   updateFolderHint();
   setStatus('已清除自定义目录，将使用下载回退。');
+}
+
+async function onDownloadNativeScript() {
+  const script = buildNativeInstallScript(chrome.runtime.id);
+  const blob = new Blob([script], { type: 'text/x-shellscript;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  try {
+    await chrome.downloads.download({
+      url,
+      filename: 'install-btl-native.sh',
+      saveAs: false
+    });
+    setStatus('脚本已下载到 Downloads/install-btl-native.sh');
+  } catch (error) {
+    setStatus('脚本下载失败，请重试。', true);
+  } finally {
+    setTimeout(() => URL.revokeObjectURL(url), 3000);
+  }
 }
 
 async function onExport() {
@@ -312,6 +331,66 @@ function cycleTheme() {
   const next = order[(idx + 1) % order.length];
   applyTheme(next);
   chrome.storage.sync.set({ theme: next });
+}
+
+function buildNativeInstallScript(extensionId) {
+  return [
+    '#!/bin/bash',
+    'set -e',
+    '',
+    `EXT_ID=\"${extensionId}\"`,
+    'HOST_NAME=\"com.grok.bookmark_writer\"',
+    '',
+    'read -r -p \"请输入本地 grok-chat-bookmark 项目绝对路径: \" PROJECT_DIR',
+    'if [ -z \"$PROJECT_DIR\" ]; then',
+    '  echo \"未输入路径，退出。\"',
+    '  exit 1',
+    'fi',
+    '',
+    'HOST_PATH=\"$PROJECT_DIR/native-host/grok_file_writer.py\"',
+    'if [ ! -f \"$HOST_PATH\" ]; then',
+    '  echo \"未找到: $HOST_PATH\"',
+    '  exit 1',
+    'fi',
+    '',
+    'chmod +x \"$HOST_PATH\"',
+    '',
+    'BROWSER_DIRS=(',
+    '  \"$HOME/Library/Application Support/Google/Chrome/NativeMessagingHosts\"',
+    '  \"$HOME/Library/Application Support/Google/Chrome Beta/NativeMessagingHosts\"',
+    '  \"$HOME/Library/Application Support/Google/Chrome Canary/NativeMessagingHosts\"',
+    '  \"$HOME/Library/Application Support/Chromium/NativeMessagingHosts\"',
+    '  \"$HOME/Library/Application Support/BraveSoftware/Brave-Browser/NativeMessagingHosts\"',
+    '  \"$HOME/Library/Application Support/Microsoft Edge/NativeMessagingHosts\"',
+    ')',
+    '',
+    'count=0',
+    'for dir in \"${BROWSER_DIRS[@]}\"; do',
+    '  parent=\"$(dirname \"$dir\")\"',
+    '  if [ -d \"$parent\" ]; then',
+    '    mkdir -p \"$dir\"',
+    '    cat > \"$dir/$HOST_NAME.json\" <<MANIFEST',
+    '{',
+    '  \"name\": \"com.grok.bookmark_writer\",',
+    '  \"description\": \"File writer for Grok Bookmark extension\",',
+    '  \"path\": \"$HOST_PATH\",',
+    '  \"type\": \"stdio\",',
+    '  \"allowed_origins\": [\"chrome-extension://' + extensionId + '/\"]',
+    '}',
+    'MANIFEST',
+    '    echo \"Installed: $dir/$HOST_NAME.json\"',
+    '    count=$((count + 1))',
+    '  fi',
+    'done',
+    '',
+    'if [ \"$count\" -eq 0 ]; then',
+    '  echo \"No Chromium browser detected.\"',
+    '  exit 1',
+    'fi',
+    '',
+    'echo \"完成。请重启浏览器。\"',
+    ''
+  ].join('\n');
 }
 
 async function getOrCreateEncryptionKey() {
