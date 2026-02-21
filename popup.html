@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grok Bookmark</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="header">
+        <h1>Grok Bookmark</h1>
+        <p>一键把当前 Grok 对话导出为 Markdown</p>
+      </section>
+
+      <section class="card">
+        <label class="label" for="provider">导出模式</label>
+        <select id="provider">
+          <option value="local-claude">Claude Code（默认）</option>
+          <option value="custom-api">自定义 API Key</option>
+          <option value="no-ai">仅导出原始 Markdown</option>
+        </select>
+
+        <div id="apiFields" class="hidden">
+          <label class="label" for="apiEndpoint">API Endpoint</label>
+          <input id="apiEndpoint" placeholder="https://api.openai.com/v1/chat/completions" />
+
+          <label class="label" for="apiKey">API Key</label>
+          <input id="apiKey" type="password" placeholder="sk-..." />
+
+          <label class="label" for="apiModel">Model</label>
+          <input id="apiModel" placeholder="gpt-4o-mini" />
+        </div>
+      </section>
+
+      <section class="card">
+        <label class="label" for="folderName">目标子文件夹名</label>
+        <input id="folderName" placeholder="grok bookmark" />
+
+        <label class="label">Claude Code 根目录</label>
+        <div class="folder-row">
+          <span id="folderPath" class="path">未选择（首次导出会提示你选择）</span>
+          <button id="pickFolder" type="button" class="secondary">选择</button>
+        </div>
+
+        <label class="checkbox-row">
+          <input id="useDownloadFallback" type="checkbox" />
+          <span>当本地写入失败时自动下载到浏览器 Download</span>
+        </label>
+      </section>
+
+      <section class="actions">
+        <button id="saveBtn" class="secondary" type="button">保存设置</button>
+        <button id="exportBtn" class="primary" type="button">导出当前对话</button>
+      </section>
+
+      <p id="status" class="status"></p>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

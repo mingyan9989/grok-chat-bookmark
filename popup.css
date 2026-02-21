@@ -1,0 +1,153 @@
+:root {
+  --bg: #f7f8fa;
+  --fg: #111827;
+  --muted: #6b7280;
+  --line: #d8dee9;
+  --card: #ffffff;
+  --primary: #0f766e;
+  --primary-hover: #115e59;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "SF Pro Text", "PingFang SC", "Hiragino Sans GB", sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  width: 360px;
+}
+
+.app {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.header p {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+input,
+select,
+button {
+  font: inherit;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: #0f766e;
+}
+
+.folder-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.path {
+  flex: 1;
+  min-height: 34px;
+  padding: 8px 10px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.checkbox-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.checkbox-row input {
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+button {
+  border-radius: 8px;
+  padding: 9px 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+button.primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+button.primary:hover {
+  background: var(--primary-hover);
+}
+
+button.secondary {
+  background: #fff;
+  border-color: var(--line);
+}
+
+.status {
+  min-height: 20px;
+  margin: 0;
+  font-size: 12px;
+}
+
+.status.ok {
+  color: #047857;
+}
+
+.status.error {
+  color: #b91c1c;
+}
+
+.hidden {
+  display: none;
+}
