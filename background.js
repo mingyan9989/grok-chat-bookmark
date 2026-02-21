@@ -79,8 +79,9 @@ async function exportCurrentGrokChat() {
 
   const chat = extraction.chat;
   const originalConversation = renderOriginalConversation(chat);
+  const referencedLinks = extractReferencedLinks(chat.messages);
   const tldr = await generateStructuredTldr(chat, settings);
-  const finalMarkdown = renderExportMarkdown({ chat, tldr, originalConversation, settings });
+  const finalMarkdown = renderExportMarkdown({ chat, tldr, originalConversation, referencedLinks, settings });
   const filename = buildFilename(chat.title || 'grok-chat');
   const preview = buildCardPreview(tldr, originalConversation);
   const mode = settings.aiEnabled && settings.exportMode === 'tldr' ? 'TLDR' : 'Original';
@@ -167,7 +168,7 @@ function renderOriginalConversation(chat) {
   return lines.join('\n').trim();
 }
 
-function renderExportMarkdown({ chat, tldr, originalConversation, settings }) {
+function renderExportMarkdown({ chat, tldr, originalConversation, referencedLinks, settings }) {
   const lines = [];
 
   lines.push(`# ${chat.title || 'Grok Chat'}`);
@@ -177,6 +178,14 @@ function renderExportMarkdown({ chat, tldr, originalConversation, settings }) {
   const modeLabel = settings.aiEnabled && settings.exportMode === 'tldr' ? 'AI TLDR' : 'Original';
   lines.push(`> **Mode**: ${modeLabel}`);
   lines.push(`> **Provider**: ${settings.provider}`);
+  lines.push('');
+  lines.push('---');
+  lines.push('');
+  lines.push('## Metadata');
+  lines.push('');
+  lines.push(`- Provider: ${settings.provider}`);
+  lines.push(`- Messages: ${chat.messages.length}`);
+  lines.push(`- Export Mode: ${modeLabel}`);
   lines.push('');
   lines.push('---');
   lines.push('');
@@ -194,6 +203,13 @@ function renderExportMarkdown({ chat, tldr, originalConversation, settings }) {
   lines.push('');
   lines.push(originalConversation || '_No content extracted._');
   lines.push('');
+
+  if (referencedLinks.length > 0) {
+    lines.push('## Referenced Links');
+    lines.push('');
+    referencedLinks.forEach((link) => lines.push(`- [${link}](${link})`));
+    lines.push('');
+  }
 
   return lines.join('\n').trim() + '\n';
 }
@@ -438,6 +454,23 @@ function buildFallbackTldr(chat) {
     '- 是否需要补充外部来源来验证关键事实？',
     '- 是否需要继续细化下一步执行清单？'
   ].join('\n');
+}
+
+function extractReferencedLinks(messages) {
+  const urlRegex = /(https?:\/\/[^\s)\]}>"']+)/gi;
+  const links = new Set();
+
+  messages.forEach((msg) => {
+    const text = String(msg?.text || '');
+    const matches = text.match(urlRegex) || [];
+    matches.forEach((m) => {
+      const cleaned = m.replace(/[.,;:!?]+$/, '');
+      if (cleaned.length < 8) return;
+      links.add(cleaned);
+    });
+  });
+
+  return Array.from(links).slice(0, 50);
 }
 
 function buildCardPreview(tldr, originalConversation) {
