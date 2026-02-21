@@ -23,7 +23,7 @@
 - Theme support: auto/light/dark modes for popup and export cards
 - Secure storage: API keys are AES-GCM encrypted in local storage (not synced)
 - Custom base folder (Claude Code root)
-- Custom subfolder name (default: `grok bookmark`)
+- Custom subfolder name (default: `grok-chat-bookmark`)
 - Download fallback when native write fails
 
 ## Installation
@@ -31,7 +31,7 @@
 1. Open `chrome://extensions/`
 2. Enable **Developer mode**
 3. Click **Load unpacked**
-4. Select: `/Users/mingyan/Grok download/grok-chat-bookmark`
+4. Select your local `grok-chat-bookmark` project folder
 
 ## Default Mode (Recommended)
 
@@ -50,7 +50,7 @@ claude login
 2. Run:
 
 ```bash
-cd "/Users/mingyan/Grok download/grok-chat-bookmark/native-host"
+cd "<your-project-path>/grok-chat-bookmark/native-host"
 bash install-macos.sh <your-extension-id>
 ```
 
@@ -68,7 +68,18 @@ bash install-macos.sh <your-extension-id>
 <selected-root>/<folderName>/<timestamp>_<title>.md
 ```
 
-`folderName` defaults to `grok bookmark`.
+`folderName` defaults to `grok-chat-bookmark`.
+
+## Custom Save Path (Optional)
+
+By default, files are saved to `Downloads/grok-chat-bookmark/`.
+
+If you want another folder:
+
+1. Click **One-click download install script** in Advanced Settings
+2. Run `bash ~/Downloads/install-btl-native.sh`
+3. Restart the browser
+4. Click **Choose Folder** in Advanced Settings and select any local directory
 
 ## Cloud Provider Mode
 

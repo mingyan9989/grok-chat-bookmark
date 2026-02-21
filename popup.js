@@ -6,7 +6,7 @@ const DEFAULTS = {
   provider: 'local-claude',
   baseUrl: '',
   apiModel: '',
-  folderName: 'grok bookmark',
+  folderName: 'grok-chat-bookmark',
   baseFolderPath: '',
   useDownloadFallback: true
 };
@@ -293,7 +293,7 @@ function updateFolderHint() {
   if (nativeHostAvailable) {
     hint.textContent = 'Native Helper 已就绪：可写入你选择的本地目录。';
   } else {
-    hint.textContent = '未安装 Native Helper：将回退保存到浏览器下载目录。';
+    hint.textContent = '未安装 Native Helper：将回退到 Downloads/grok-chat-bookmark/。';
   }
 }
 

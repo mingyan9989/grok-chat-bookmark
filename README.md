@@ -23,7 +23,7 @@
 - 深色模式：支持自动/浅色/深色三档切换（弹窗与导出卡片）
 - 安全存储：API Key 使用 AES-GCM 加密后存储在 `chrome.storage.local`（不走 sync）
 - 自定义目录：可指定 Claude Code 根目录
-- 自定义子文件夹名：默认 `grok bookmark`，可改成任何名字
+- 自定义子文件夹名：默认 `grok-chat-bookmark`，可改成任何名字
 - 失败回退：本地写入失败时可自动回退到浏览器下载
 
 ## 安装
@@ -31,7 +31,7 @@
 1. 打开 Chrome 扩展页：`chrome://extensions/`
 2. 打开右上角 **开发者模式**
 3. 点击 **加载已解压的扩展程序**
-4. 选择目录：`/Users/mingyan/Grok download/grok-chat-bookmark`
+4. 选择你本地的 `grok-chat-bookmark` 项目目录
 
 ## 默认模式（推荐）
 
@@ -50,7 +50,7 @@ claude login
 2. 在终端执行：
 
 ```bash
-cd "/Users/mingyan/Grok download/grok-chat-bookmark/native-host"
+cd "<你的项目目录>/grok-chat-bookmark/native-host"
 bash install-macos.sh <你的扩展ID>
 ```
 
@@ -68,7 +68,16 @@ bash install-macos.sh <你的扩展ID>
 <你选的目录>/<folderName>/<timestamp>_<title>.md
 ```
 
-其中 `folderName` 默认是 `grok bookmark`。
+其中 `folderName` 默认是 `grok-chat-bookmark`。
+
+## 自定义保存路径（可选）
+
+默认保存到 `Downloads/grok-chat-bookmark/` 目录。如需保存到其他文件夹：
+
+1. 在高级设置中点击「一键下载安装脚本」
+2. 在终端运行 `bash ~/Downloads/install-btl-native.sh`
+3. 重启浏览器
+4. 在高级设置中点击「选择文件夹」，选择任意本地目录
 
 ## 云模型模式
 

@@ -23,7 +23,7 @@ const DEFAULT_SETTINGS = {
   provider: 'local-claude',
   baseUrl: '',
   apiModel: '',
-  folderName: 'grok bookmark',
+  folderName: 'grok-chat-bookmark',
   baseFolderPath: '',
   useDownloadFallback: true
 };
