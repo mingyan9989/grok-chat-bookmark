@@ -7,6 +7,7 @@
 ## 功能特点
 
 - 一键导出：在 Grok 对话页点击扩展按钮，立即导出当前对话
+- 结构化 TLDR：AI 模式下自动生成 `Key Points / Step-by-Step / Fact Check(1-10) / Open Questions`
 - 默认 Claude Code 流程：默认使用本地 Claude Code CLI（无需 API Key）
 - 可选自定义 API：支持填写 `API Endpoint + API Key + Model`
 - 自定义目录：可指定 Claude Code 根目录

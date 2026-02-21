@@ -60,8 +60,9 @@ async function exportCurrentGrokChat() {
   }
 
   const chat = extraction.chat;
-  const rawMarkdown = renderMarkdown(chat);
-  const finalMarkdown = await generateFinalMarkdown(rawMarkdown, chat, settings);
+  const originalConversation = renderOriginalConversation(chat);
+  const tldr = await generateStructuredTldr(chat, settings);
+  const finalMarkdown = renderExportMarkdown({ chat, tldr, originalConversation, provider: settings.provider });
   const filename = buildFilename(chat.title || 'grok-chat');
 
   const target = await ensureTargetPath(settings);
@@ -100,72 +101,114 @@ async function getActiveTab() {
   return tabs[0] || null;
 }
 
-function renderMarkdown(chat) {
+function renderOriginalConversation(chat) {
   const lines = [];
-  lines.push(`# ${chat.title || 'Grok Chat'}`);
-  lines.push('');
-  lines.push(`> **Source**: ${chat.url || 'unknown'}`);
-  lines.push(`> **Exported At**: ${new Date().toISOString()}`);
-  lines.push('');
-  lines.push('---');
-  lines.push('');
 
   chat.messages.forEach((message, index) => {
     const role = message.role === 'assistant' ? 'Grok' : 'User';
-    lines.push(`## ${index + 1}. ${role}`);
+    lines.push(`### ${index + 1}. ${role}`);
     lines.push('');
     lines.push(message.text || '');
     lines.push('');
   });
 
+  return lines.join('\n').trim();
+}
+
+function renderExportMarkdown({ chat, tldr, originalConversation, provider }) {
+  const lines = [];
+
+  lines.push(`# ${chat.title || 'Grok Chat'}`);
+  lines.push('');
+  lines.push(`> **Source**: ${chat.url || 'unknown'}`);
+  lines.push(`> **Exported At**: ${new Date().toISOString()}`);
+  lines.push(`> **Mode**: ${provider === 'no-ai' ? 'Original' : 'AI TLDR'}`);
+  lines.push('');
+  lines.push('---');
+  lines.push('');
+
+  if (tldr) {
+    lines.push('## TLDR');
+    lines.push('');
+    lines.push(tldr.trim());
+    lines.push('');
+    lines.push('---');
+    lines.push('');
+  }
+
+  lines.push('## Original Conversation');
+  lines.push('');
+  lines.push(originalConversation || '_No content extracted._');
+  lines.push('');
+
   return lines.join('\n').trim() + '\n';
 }
 
-async function generateFinalMarkdown(rawMarkdown, chat, settings) {
-  switch (settings.provider) {
-    case 'local-claude':
-      return runLocalClaude(rawMarkdown, chat);
-    case 'custom-api':
-      return runCustomApi(rawMarkdown, chat, settings);
-    case 'no-ai':
-    default:
-      return rawMarkdown;
+async function generateStructuredTldr(chat, settings) {
+  if (settings.provider === 'no-ai') {
+    return null;
+  }
+
+  const fallback = buildFallbackTldr(chat);
+
+  try {
+    if (settings.provider === 'local-claude') {
+      const tldr = await runLocalClaudeSummary(chat);
+      return normalizeSummary(tldr) || fallback;
+    }
+
+    if (settings.provider === 'custom-api') {
+      const tldr = await runCustomApiSummary(chat, settings);
+      return normalizeSummary(tldr) || fallback;
+    }
+
+    return fallback;
+  } catch (error) {
+    return fallback;
   }
 }
 
-async function runLocalClaude(rawMarkdown, chat) {
+async function runLocalClaudeSummary(chat) {
   const system = [
-    'You are a markdown formatter.',
-    'Keep all facts unchanged.',
-    'Do not remove conversation content.',
-    'Return markdown only.'
+    'You are an expert conversation analyst.',
+    'Generate a structured TLDR in markdown.',
+    'Keep facts faithful to the conversation only.',
+    'Always include a Fact Check score from 1 to 10.',
+    'Return markdown only, no preface.'
   ].join(' ');
 
   const user = [
-    `Please polish this Grok conversation markdown.`,
-    `Title: ${chat.title || 'Grok Chat'}`,
+    'Analyze this Grok conversation and output markdown with exactly these sections:',
+    '### Key Points',
+    '- bullet list',
+    '### Step-by-Step',
+    '1. numbered steps',
+    '### Fact Check',
+    '- Score: X/10',
+    '- Rationale: ...',
+    '### Open Questions',
+    '- bullet list',
     '',
-    rawMarkdown
+    `Conversation Title: ${chat.title || 'Grok Chat'}`,
+    `Conversation URL: ${chat.url || 'unknown'}`,
+    '',
+    renderOriginalConversation(chat)
   ].join('\n');
 
-  try {
-    const result = await sendNativeMessage({
-      action: 'call_claude',
-      system,
-      user
-    });
+  const result = await sendNativeMessage({
+    action: 'call_claude',
+    system,
+    user
+  });
 
-    if (result?.success && result.text && result.text.trim()) {
-      return result.text.trim() + '\n';
-    }
-
-    return rawMarkdown;
-  } catch (error) {
-    return rawMarkdown;
+  if (!result?.success || !result.text || !result.text.trim()) {
+    throw new Error(result?.error || 'Local Claude summarization failed.');
   }
+
+  return result.text.trim();
 }
 
-async function runCustomApi(rawMarkdown, chat, settings) {
+async function runCustomApiSummary(chat, settings) {
   if (!settings.apiEndpoint) {
     throw new Error('Custom API 模式需要 API Endpoint。');
   }
@@ -184,15 +227,17 @@ async function runCustomApi(rawMarkdown, chat, settings) {
     messages: [
       {
         role: 'system',
-        content: 'You format chat records into clean markdown. Keep facts unchanged. Return markdown only.'
+        content:
+          'You are an expert conversation analyst. Return markdown only. Include sections: Key Points, Step-by-Step, Fact Check with Score X/10, and Open Questions.'
       },
       {
         role: 'user',
         content: [
-          `Title: ${chat.title || 'Grok Chat'}`,
-          'Polish the following markdown without deleting information.',
+          `Conversation Title: ${chat.title || 'Grok Chat'}`,
+          `Conversation URL: ${chat.url || 'unknown'}`,
+          'Please generate structured TLDR with fact check score 1-10.',
           '',
-          rawMarkdown
+          renderOriginalConversation(chat)
         ].join('\n')
       }
     ]
@@ -209,7 +254,6 @@ async function runCustomApi(rawMarkdown, chat, settings) {
   }
 
   const data = await response.json();
-
   const text =
     data?.choices?.[0]?.message?.content ||
     data?.output_text ||
@@ -217,10 +261,56 @@ async function runCustomApi(rawMarkdown, chat, settings) {
     data?.output;
 
   if (typeof text === 'string' && text.trim()) {
-    return text.trim() + '\n';
+    return text.trim();
   }
 
-  return rawMarkdown;
+  throw new Error('Custom API returned empty summary.');
+}
+
+function normalizeSummary(summaryText) {
+  if (!summaryText) {
+    return '';
+  }
+
+  let text = String(summaryText).trim();
+  text = text.replace(/^```(?:markdown)?/i, '').replace(/```$/i, '').trim();
+
+  const hasKeyPoints = /key\s*points|要点/i.test(text);
+  const hasSteps = /step[-\s]*by[-\s]*step|步骤/i.test(text);
+  const hasFact = /fact\s*check|可信|评分|score\s*:\s*\d+\s*\/\s*10/i.test(text);
+
+  if (hasKeyPoints && hasSteps && hasFact) {
+    return text;
+  }
+
+  return '';
+}
+
+function buildFallbackTldr(chat) {
+  const firstUser = chat.messages.find((m) => m.role === 'user')?.text || '';
+  const firstAssistant = chat.messages.find((m) => m.role === 'assistant')?.text || '';
+
+  const userBrief = firstUser.slice(0, 180).replace(/\n+/g, ' ').trim() || 'User asked for help in this conversation.';
+  const assistantBrief = firstAssistant.slice(0, 220).replace(/\n+/g, ' ').trim() || 'Assistant provided a response.';
+
+  return [
+    '### Key Points',
+    `- ${userBrief}`,
+    `- ${assistantBrief}`,
+    '',
+    '### Step-by-Step',
+    '1. User提出问题或任务。',
+    '2. Grok给出分析与建议。',
+    '3. 对话围绕解决路径继续展开。',
+    '',
+    '### Fact Check',
+    '- Score: 5/10',
+    '- Rationale: Auto-fallback summary generated without full model validation.',
+    '',
+    '### Open Questions',
+    '- 是否需要补充外部来源来验证关键事实？',
+    '- 是否需要继续细化下一步执行清单？'
+  ].join('\n');
 }
 
 async function ensureTargetPath(settings) {
