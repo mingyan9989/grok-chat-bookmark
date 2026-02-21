@@ -21,6 +21,7 @@
 - Custom save path via Native Helper with select/clear folder flow
 - Multi-language summary: Simplified Chinese / Traditional Chinese / English / Japanese / Korean
 - Theme support: auto/light/dark modes for popup and export cards
+- UI language switch: popup UI supports Chinese / English
 - Secure storage: API keys are AES-GCM encrypted in local storage (not synced)
 - Custom base folder (Claude Code root)
 - Custom subfolder name (default: `grok-chat-bookmark`)

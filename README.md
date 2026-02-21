@@ -21,6 +21,7 @@
 - 自定义保存路径：通过 Native Helper 可选择任意本地目录并支持清空重选
 - 多语言摘要：支持简中 / 繁中 / English / 日本語 / 한국어
 - 深色模式：支持自动/浅色/深色三档切换（弹窗与导出卡片）
+- 界面语言：弹窗 UI 支持中文 / English 切换
 - 安全存储：API Key 使用 AES-GCM 加密后存储在 `chrome.storage.local`（不走 sync）
 - 自定义目录：可指定 Claude Code 根目录
 - 自定义子文件夹名：默认 `grok-chat-bookmark`，可改成任何名字

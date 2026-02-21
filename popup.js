@@ -2,6 +2,7 @@ const DEFAULTS = {
   aiEnabled: true,
   exportMode: 'tldr',
   language: 'zh-CN',
+  uiLanguage: 'zh',
   theme: 'auto',
   provider: 'local-claude',
   baseUrl: '',
@@ -19,15 +20,136 @@ const DEFAULT_MODELS = {
   'local-claude': 'claude-code-local'
 };
 
+const I18N = {
+  zh: {
+    appTitle: 'Grok Bookmark',
+    subtitle: '一键把当前 Grok 对话导出为 Markdown',
+    tabSettings: '设置',
+    tabHistory: '历史',
+    aiToggle: 'AI 摘要开关（默认开启）',
+    exportModeLabel: '导出模式',
+    exportModeTldr: 'TLDR 摘要模式',
+    exportModeOriginal: '原文模式（跳过 AI 摘要）',
+    summaryLangLabel: '摘要语言',
+    summaryLangZhCn: '简体中文',
+    summaryLangZhTw: '繁體中文',
+    summaryLangEn: 'English',
+    summaryLangJa: '日本語',
+    summaryLangKo: '한국어',
+    providerLabel: 'AI 提供方',
+    providerLocal: 'Claude Code（默认）',
+    apiKeyLabel: 'API Key',
+    baseUrlLabel: 'Base URL（可选）',
+    modelLabel: 'Model',
+    modelHintPrefix: '默认',
+    folderNameLabel: '目标子文件夹名',
+    rootDirLabel: 'Claude Code 根目录',
+    folderUnselected: '未选择（首次导出会提示你选择）',
+    pickFolderBtn: '选择',
+    clearFolderBtn: '清除',
+    downloadScriptBtn: '一键下载安装脚本',
+    fallbackCheckbox: '当本地写入失败时自动下载到浏览器 Download',
+    saveBtn: '保存设置',
+    exportBtn: '导出当前对话',
+    historyTitle: '导出历史',
+    clearHistoryBtn: '清空',
+    historyEmpty: '暂无历史记录',
+    historyNoPreview: '(无预览)',
+    modeTLDR: 'TLDR',
+    modeOriginal: '原文',
+    folderHintReady: 'Native Helper 已就绪：可写入你选择的本地目录。',
+    folderHintMissing: '未安装 Native Helper：将回退到 Downloads/grok-chat-bookmark/。',
+    themePrefix: '主题',
+    themeAuto: '自动',
+    themeLight: '浅色',
+    themeDark: '深色',
+    statusSettingsSaved: '设置已保存。',
+    statusNativeMissing: '未检测到 Native Helper，请先按 README 安装。',
+    statusOpeningPicker: '正在打开文件夹选择器...',
+    statusRootUpdated: '已更新 Claude Code 根目录。',
+    statusFolderCleared: '已清除自定义目录，将使用下载回退。',
+    statusScriptDownloaded: '脚本已下载到 Downloads/install-btl-native.sh',
+    statusScriptDownloadFailed: '脚本下载失败，请重试。',
+    statusExporting: '正在导出当前 Grok 对话...',
+    statusExportSuccessNative: '导出成功: {path}',
+    statusExportSuccessDownload: '导出成功（下载）: {filename}',
+    statusHistoryCleared: '历史记录已清空。',
+    errBaseUrlInvalid: 'Base URL 格式无效。',
+    errApiKeyRequired: '当前模型需要填写 API Key。',
+    errUnknownExtension: '扩展响应异常。'
+  },
+  en: {
+    appTitle: 'Grok Bookmark',
+    subtitle: 'One-click export of current Grok chat to Markdown',
+    tabSettings: 'Settings',
+    tabHistory: 'History',
+    aiToggle: 'AI summary toggle (enabled by default)',
+    exportModeLabel: 'Export Mode',
+    exportModeTldr: 'TLDR Summary Mode',
+    exportModeOriginal: 'Original Mode (skip AI summary)',
+    summaryLangLabel: 'Summary Language',
+    summaryLangZhCn: 'Simplified Chinese',
+    summaryLangZhTw: 'Traditional Chinese',
+    summaryLangEn: 'English',
+    summaryLangJa: 'Japanese',
+    summaryLangKo: 'Korean',
+    providerLabel: 'AI Provider',
+    providerLocal: 'Claude Code (Default)',
+    apiKeyLabel: 'API Key',
+    baseUrlLabel: 'Base URL (Optional)',
+    modelLabel: 'Model',
+    modelHintPrefix: 'Default',
+    folderNameLabel: 'Target Subfolder Name',
+    rootDirLabel: 'Claude Code Root Folder',
+    folderUnselected: 'Not selected (you will be prompted on first export)',
+    pickFolderBtn: 'Choose',
+    clearFolderBtn: 'Clear',
+    downloadScriptBtn: 'One-click Download Install Script',
+    fallbackCheckbox: 'Auto-download to browser Downloads if native write fails',
+    saveBtn: 'Save Settings',
+    exportBtn: 'Export Current Chat',
+    historyTitle: 'Export History',
+    clearHistoryBtn: 'Clear',
+    historyEmpty: 'No history yet',
+    historyNoPreview: '(no preview)',
+    modeTLDR: 'TLDR',
+    modeOriginal: 'Original',
+    folderHintReady: 'Native Helper is ready: files can be written to your selected local folder.',
+    folderHintMissing: 'Native Helper not installed: fallback path is Downloads/grok-chat-bookmark/.',
+    themePrefix: 'Theme',
+    themeAuto: 'Auto',
+    themeLight: 'Light',
+    themeDark: 'Dark',
+    statusSettingsSaved: 'Settings saved.',
+    statusNativeMissing: 'Native Helper not detected. Please install it from README first.',
+    statusOpeningPicker: 'Opening folder picker...',
+    statusRootUpdated: 'Claude Code root folder updated.',
+    statusFolderCleared: 'Custom folder cleared. Download fallback will be used.',
+    statusScriptDownloaded: 'Script downloaded to Downloads/install-btl-native.sh',
+    statusScriptDownloadFailed: 'Failed to download script. Please retry.',
+    statusExporting: 'Exporting current Grok chat...',
+    statusExportSuccessNative: 'Export success: {path}',
+    statusExportSuccessDownload: 'Export success (download): {filename}',
+    statusHistoryCleared: 'History cleared.',
+    errBaseUrlInvalid: 'Invalid Base URL format.',
+    errApiKeyRequired: 'API key is required for this provider.',
+    errUnknownExtension: 'Unexpected extension response.'
+  }
+};
+
 const statusEl = document.getElementById('status');
 const aiEnabledEl = document.getElementById('aiEnabled');
 const exportModeEl = document.getElementById('exportMode');
 const languageEl = document.getElementById('language');
+const uiLanguageEl = document.getElementById('uiLanguage');
 const providerEl = document.getElementById('provider');
 const apiFieldsEl = document.getElementById('apiFields');
 const folderPathEl = document.getElementById('folderPath');
 const themeBtnEl = document.getElementById('themeToggle');
+
 let nativeHostAvailable = false;
+let currentUiLanguage = 'zh';
+let currentBaseFolderPath = '';
 
 init().catch((error) => {
   setStatus(error.message, true);
@@ -40,6 +162,7 @@ document.getElementById('clearFolder').addEventListener('click', onClearFolder);
 document.getElementById('downloadNativeScript').addEventListener('click', onDownloadNativeScript);
 document.getElementById('clearHistoryBtn').addEventListener('click', onClearHistory);
 themeBtnEl.addEventListener('click', cycleTheme);
+uiLanguageEl.addEventListener('change', onUiLanguageChange);
 providerEl.addEventListener('change', syncProviderVisibility);
 aiEnabledEl.addEventListener('change', syncProviderVisibility);
 exportModeEl.addEventListener('change', syncProviderVisibility);
@@ -48,12 +171,17 @@ document.querySelectorAll('.tab-btn').forEach((btn) => {
 });
 
 async function init() {
-  nativeHostAvailable = await checkNativeHost();
   await migratePlaintextApiKeyFromSync();
   const settings = await loadSettings();
   const apiKeyPlain = await loadDecryptedApiKey();
 
+  currentUiLanguage = normalizeUiLanguage(settings.uiLanguage || 'zh');
+  uiLanguageEl.value = currentUiLanguage;
+  applyUILanguage(currentUiLanguage);
+
   applyTheme(settings.theme || 'auto');
+  nativeHostAvailable = await checkNativeHost();
+
   aiEnabledEl.checked = !!settings.aiEnabled;
   exportModeEl.value = settings.exportMode;
   languageEl.value = settings.language || DEFAULTS.language;
@@ -64,10 +192,75 @@ async function init() {
   document.getElementById('folderName').value = settings.folderName;
   document.getElementById('useDownloadFallback').checked = !!settings.useDownloadFallback;
 
-  renderFolderPath(settings.baseFolderPath);
+  currentBaseFolderPath = settings.baseFolderPath || '';
+  renderFolderPath(currentBaseFolderPath);
   updateFolderHint();
   syncProviderVisibility();
   await loadHistory();
+}
+
+async function onUiLanguageChange() {
+  currentUiLanguage = normalizeUiLanguage(uiLanguageEl.value);
+  applyUILanguage(currentUiLanguage);
+  await chrome.storage.sync.set({ uiLanguage: currentUiLanguage });
+  await loadHistory();
+}
+
+function normalizeUiLanguage(value) {
+  return value === 'en' ? 'en' : 'zh';
+}
+
+function t(key, vars = {}) {
+  const dict = I18N[currentUiLanguage] || I18N.zh;
+  const tpl = dict[key] || I18N.zh[key] || key;
+  return tpl.replace(/\{(\w+)\}/g, (_, name) => String(vars[name] ?? ''));
+}
+
+function applyUILanguage(lang) {
+  currentUiLanguage = normalizeUiLanguage(lang);
+  document.documentElement.lang = currentUiLanguage === 'en' ? 'en' : 'zh-CN';
+
+  document.getElementById('appTitle').textContent = t('appTitle');
+  document.getElementById('subtitle').textContent = t('subtitle');
+  document.getElementById('tabSettingsBtn').textContent = t('tabSettings');
+  document.getElementById('tabHistoryBtn').textContent = t('tabHistory');
+
+  document.getElementById('aiToggleText').textContent = t('aiToggle');
+  document.getElementById('exportModeLabel').textContent = t('exportModeLabel');
+  document.getElementById('exportModeTldrOpt').textContent = t('exportModeTldr');
+  document.getElementById('exportModeOriginalOpt').textContent = t('exportModeOriginal');
+
+  document.getElementById('summaryLangLabel').textContent = t('summaryLangLabel');
+  document.getElementById('sumLangZhCn').textContent = t('summaryLangZhCn');
+  document.getElementById('sumLangZhTw').textContent = t('summaryLangZhTw');
+  document.getElementById('sumLangEn').textContent = t('summaryLangEn');
+  document.getElementById('sumLangJa').textContent = t('summaryLangJa');
+  document.getElementById('sumLangKo').textContent = t('summaryLangKo');
+
+  document.getElementById('providerLabel').textContent = t('providerLabel');
+  document.getElementById('providerLocalOpt').textContent = t('providerLocal');
+
+  document.getElementById('apiKeyLabel').textContent = t('apiKeyLabel');
+  document.getElementById('baseUrlLabel').textContent = t('baseUrlLabel');
+  document.getElementById('modelLabel').textContent = t('modelLabel');
+
+  document.getElementById('folderNameLabel').textContent = t('folderNameLabel');
+  document.getElementById('rootDirLabel').textContent = t('rootDirLabel');
+  document.getElementById('pickFolder').textContent = t('pickFolderBtn');
+  document.getElementById('clearFolder').textContent = t('clearFolderBtn');
+  document.getElementById('downloadNativeScript').textContent = t('downloadScriptBtn');
+  document.getElementById('downloadFallbackText').textContent = t('fallbackCheckbox');
+
+  document.getElementById('saveBtn').textContent = t('saveBtn');
+  document.getElementById('exportBtn').textContent = t('exportBtn');
+  document.getElementById('historyTitle').textContent = t('historyTitle');
+  document.getElementById('clearHistoryBtn').textContent = t('clearHistoryBtn');
+  document.getElementById('historyEmpty').textContent = t('historyEmpty');
+
+  renderFolderPath(currentBaseFolderPath);
+  updateFolderHint();
+  updateModelHint(providerEl.value);
+  applyTheme(document.documentElement.getAttribute('data-theme') || 'auto');
 }
 
 function syncProviderVisibility() {
@@ -88,7 +281,7 @@ async function onSave() {
     await persistApiKey(next.apiKey);
     const syncPayload = stripSensitiveSettings(next);
     await chrome.storage.sync.set(syncPayload);
-    setStatus('设置已保存。');
+    setStatus(t('statusSettingsSaved'));
   } catch (error) {
     setStatus(error.message, true);
   }
@@ -96,15 +289,16 @@ async function onSave() {
 
 async function onPickFolder() {
   if (!nativeHostAvailable) {
-    setStatus('未检测到 Native Helper，请先按 README 安装。', true);
+    setStatus(t('statusNativeMissing'), true);
     return;
   }
   try {
-    setStatus('正在打开文件夹选择器...');
+    setStatus(t('statusOpeningPicker'));
     const result = await sendMessage({ type: 'PICK_FOLDER' });
-    renderFolderPath(result.baseFolderPath);
+    currentBaseFolderPath = result.baseFolderPath || '';
+    renderFolderPath(currentBaseFolderPath);
     updateFolderHint();
-    setStatus('已更新 Claude Code 根目录。');
+    setStatus(t('statusRootUpdated'));
   } catch (error) {
     setStatus(error.message, true);
   }
@@ -112,13 +306,14 @@ async function onPickFolder() {
 
 async function onClearFolder() {
   await chrome.storage.sync.remove(['baseFolderPath']);
-  renderFolderPath('');
+  currentBaseFolderPath = '';
+  renderFolderPath(currentBaseFolderPath);
   updateFolderHint();
-  setStatus('已清除自定义目录，将使用下载回退。');
+  setStatus(t('statusFolderCleared'));
 }
 
 async function onDownloadNativeScript() {
-  const script = buildNativeInstallScript(chrome.runtime.id);
+  const script = buildNativeInstallScript(chrome.runtime.id, currentUiLanguage);
   const blob = new Blob([script], { type: 'text/x-shellscript;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   try {
@@ -127,9 +322,9 @@ async function onDownloadNativeScript() {
       filename: 'install-btl-native.sh',
       saveAs: false
     });
-    setStatus('脚本已下载到 Downloads/install-btl-native.sh');
+    setStatus(t('statusScriptDownloaded'));
   } catch (error) {
-    setStatus('脚本下载失败，请重试。', true);
+    setStatus(t('statusScriptDownloadFailed'), true);
   } finally {
     setTimeout(() => URL.revokeObjectURL(url), 3000);
   }
@@ -143,13 +338,13 @@ async function onExport() {
     const syncPayload = stripSensitiveSettings(next);
     await chrome.storage.sync.set(syncPayload);
 
-    setStatus('正在导出当前 Grok 对话...');
+    setStatus(t('statusExporting'));
     const result = await sendMessage({ type: 'EXPORT_CURRENT_GROK_CHAT' });
 
     if (result.method === 'native') {
-      setStatus(`导出成功: ${result.filePath}`);
+      setStatus(t('statusExportSuccessNative', { path: result.filePath }));
     } else {
-      setStatus(`导出成功（下载）: ${result.filename}`);
+      setStatus(t('statusExportSuccessDownload', { filename: result.filename }));
     }
     await loadHistory();
   } catch (error) {
@@ -165,6 +360,7 @@ function collectSettings() {
     aiEnabled: !!aiEnabledEl.checked,
     exportMode: exportModeEl.value,
     language: languageEl.value,
+    uiLanguage: currentUiLanguage,
     theme: document.documentElement.getAttribute('data-theme') || 'auto',
     provider,
     apiKey: (document.getElementById('apiKey').value || '').trim(),
@@ -178,7 +374,7 @@ function collectSettings() {
   if (baseUrlInput) {
     const normalized = normalizeBaseUrl(baseUrlInput);
     if (!normalized) {
-      throw new Error('Base URL 格式无效。');
+      throw new Error(t('errBaseUrlInvalid'));
     }
     settings.baseUrl = normalized;
   }
@@ -188,7 +384,7 @@ function collectSettings() {
 
 function updateModelHint(provider) {
   const hint = DEFAULT_MODELS[provider] || 'auto';
-  document.getElementById('modelHint').textContent = `默认: ${hint}`;
+  document.getElementById('modelHint').textContent = `${t('modelHintPrefix')}: ${hint}`;
 }
 
 function normalizeBaseUrl(value) {
@@ -221,7 +417,7 @@ async function validateApiKeyRequirement(settings) {
 
   const localData = await chrome.storage.local.get('encryptedApiKey');
   if (!localData.encryptedApiKey) {
-    throw new Error('当前模型需要填写 API Key。');
+    throw new Error(t('errApiKeyRequired'));
   }
 }
 
@@ -267,7 +463,7 @@ async function persistApiKey(apiKeyPlain) {
 function renderFolderPath(path) {
   const clearBtn = document.getElementById('clearFolder');
   if (!path) {
-    folderPathEl.textContent = '未选择（首次导出会提示你选择）';
+    folderPathEl.textContent = t('folderUnselected');
     clearBtn.classList.add('hidden');
     return;
   }
@@ -290,7 +486,7 @@ function sendMessage(payload) {
         return;
       }
       if (!response?.ok) {
-        reject(new Error(response?.error || 'Unknown extension error.'));
+        reject(new Error(response?.error || t('errUnknownExtension')));
         return;
       }
       resolve(response);
@@ -309,19 +505,20 @@ async function checkNativeHost() {
 
 function updateFolderHint() {
   const hint = document.getElementById('folderHint');
-  if (nativeHostAvailable) {
-    hint.textContent = 'Native Helper 已就绪：可写入你选择的本地目录。';
-  } else {
-    hint.textContent = '未安装 Native Helper：将回退到 Downloads/grok-chat-bookmark/。';
-  }
+  hint.textContent = nativeHostAvailable ? t('folderHintReady') : t('folderHintMissing');
 }
 
 function applyTheme(theme) {
   const resolved = ['auto', 'light', 'dark'].includes(theme) ? theme : 'auto';
   document.documentElement.setAttribute('data-theme', resolved);
   document.body.setAttribute('data-theme', resolved);
-  const map = { auto: '自动', light: '浅色', dark: '深色' };
-  themeBtnEl.textContent = `主题: ${map[resolved] || '自动'}`;
+
+  const themeLabelMap = {
+    auto: t('themeAuto'),
+    light: t('themeLight'),
+    dark: t('themeDark')
+  };
+  themeBtnEl.textContent = `${t('themePrefix')}: ${themeLabelMap[resolved] || themeLabelMap.auto}`;
 }
 
 function cycleTheme() {
@@ -333,62 +530,70 @@ function cycleTheme() {
   chrome.storage.sync.set({ theme: next });
 }
 
-function buildNativeInstallScript(extensionId) {
+function buildNativeInstallScript(extensionId, uiLang) {
+  const isEn = uiLang === 'en';
+  const prompt = isEn
+    ? 'Enter the absolute path of your local grok-chat-bookmark project: '
+    : '请输入本地 grok-chat-bookmark 项目绝对路径: ';
+  const emptyTip = isEn ? 'No path entered. Exit.' : '未输入路径，退出。';
+  const notFoundTip = isEn ? 'Not found: $HOST_PATH' : '未找到: $HOST_PATH';
+  const doneTip = isEn ? 'Done. Please restart your browser.' : '完成。请重启浏览器。';
+
   return [
     '#!/bin/bash',
     'set -e',
     '',
-    `EXT_ID=\"${extensionId}\"`,
-    'HOST_NAME=\"com.grok.bookmark_writer\"',
+    `EXT_ID="${extensionId}"`,
+    'HOST_NAME="com.grok.bookmark_writer"',
     '',
-    'read -r -p \"请输入本地 grok-chat-bookmark 项目绝对路径: \" PROJECT_DIR',
-    'if [ -z \"$PROJECT_DIR\" ]; then',
-    '  echo \"未输入路径，退出。\"',
+    `read -r -p "${prompt}" PROJECT_DIR`,
+    'if [ -z "$PROJECT_DIR" ]; then',
+    `  echo "${emptyTip}"`,
     '  exit 1',
     'fi',
     '',
-    'HOST_PATH=\"$PROJECT_DIR/native-host/grok_file_writer.py\"',
-    'if [ ! -f \"$HOST_PATH\" ]; then',
-    '  echo \"未找到: $HOST_PATH\"',
+    'HOST_PATH="$PROJECT_DIR/native-host/grok_file_writer.py"',
+    'if [ ! -f "$HOST_PATH" ]; then',
+    `  echo "${notFoundTip}"`,
     '  exit 1',
     'fi',
     '',
-    'chmod +x \"$HOST_PATH\"',
+    'chmod +x "$HOST_PATH"',
     '',
     'BROWSER_DIRS=(',
-    '  \"$HOME/Library/Application Support/Google/Chrome/NativeMessagingHosts\"',
-    '  \"$HOME/Library/Application Support/Google/Chrome Beta/NativeMessagingHosts\"',
-    '  \"$HOME/Library/Application Support/Google/Chrome Canary/NativeMessagingHosts\"',
-    '  \"$HOME/Library/Application Support/Chromium/NativeMessagingHosts\"',
-    '  \"$HOME/Library/Application Support/BraveSoftware/Brave-Browser/NativeMessagingHosts\"',
-    '  \"$HOME/Library/Application Support/Microsoft Edge/NativeMessagingHosts\"',
+    '  "$HOME/Library/Application Support/Google/Chrome/NativeMessagingHosts"',
+    '  "$HOME/Library/Application Support/Google/Chrome Beta/NativeMessagingHosts"',
+    '  "$HOME/Library/Application Support/Google/Chrome Canary/NativeMessagingHosts"',
+    '  "$HOME/Library/Application Support/Chromium/NativeMessagingHosts"',
+    '  "$HOME/Library/Application Support/BraveSoftware/Brave-Browser/NativeMessagingHosts"',
+    '  "$HOME/Library/Application Support/Microsoft Edge/NativeMessagingHosts"',
     ')',
     '',
     'count=0',
-    'for dir in \"${BROWSER_DIRS[@]}\"; do',
-    '  parent=\"$(dirname \"$dir\")\"',
-    '  if [ -d \"$parent\" ]; then',
-    '    mkdir -p \"$dir\"',
-    '    cat > \"$dir/$HOST_NAME.json\" <<MANIFEST',
+    'for dir in "${BROWSER_DIRS[@]}"; do',
+    '  parent="$(dirname "$dir")"',
+    '  if [ -d "$parent" ]; then',
+    '    mkdir -p "$dir"',
+    '    cat > "$dir/$HOST_NAME.json" <<MANIFEST',
     '{',
-    '  \"name\": \"com.grok.bookmark_writer\",',
-    '  \"description\": \"File writer for Grok Bookmark extension\",',
-    '  \"path\": \"$HOST_PATH\",',
-    '  \"type\": \"stdio\",',
-    '  \"allowed_origins\": [\"chrome-extension://' + extensionId + '/\"]',
+    '  "name": "com.grok.bookmark_writer",',
+    '  "description": "File writer for Grok Bookmark extension",',
+    '  "path": "$HOST_PATH",',
+    '  "type": "stdio",',
+    '  "allowed_origins": ["chrome-extension://' + extensionId + '/"]',
     '}',
     'MANIFEST',
-    '    echo \"Installed: $dir/$HOST_NAME.json\"',
+    '    echo "Installed: $dir/$HOST_NAME.json"',
     '    count=$((count + 1))',
     '  fi',
     'done',
     '',
-    'if [ \"$count\" -eq 0 ]; then',
-    '  echo \"No Chromium browser detected.\"',
+    'if [ "$count" -eq 0 ]; then',
+    '  echo "No Chromium browser detected."',
     '  exit 1',
     'fi',
     '',
-    'echo \"完成。请重启浏览器。\"',
+    `echo "${doneTip}"`,
     ''
   ].join('\n');
 }
@@ -464,11 +669,12 @@ async function loadHistory() {
     const meta = document.createElement('p');
     meta.className = 'meta';
     const time = new Date(entry.timestamp || Date.now()).toLocaleString();
-    meta.textContent = `${time} · ${entry.mode || 'TLDR'} · ${entry.provider || 'local-claude'}`;
+    const mode = String(entry.mode || '').toLowerCase().includes('original') ? t('modeOriginal') : t('modeTLDR');
+    meta.textContent = `${time} · ${mode} · ${entry.provider || 'local-claude'}`;
 
     const preview = document.createElement('p');
     preview.className = 'preview';
-    preview.textContent = (entry.preview || '').slice(0, 200) || '(no preview)';
+    preview.textContent = (entry.preview || '').slice(0, 200) || t('historyNoPreview');
 
     item.appendChild(title);
     item.appendChild(meta);
@@ -482,5 +688,5 @@ async function loadHistory() {
 async function onClearHistory() {
   await chrome.storage.local.set({ history: [] });
   await loadHistory();
-  setStatus('历史记录已清空。');
+  setStatus(t('statusHistoryCleared'));
 }
