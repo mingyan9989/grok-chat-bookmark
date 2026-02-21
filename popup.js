@@ -11,6 +11,7 @@ const DEFAULTS = {
   baseFolderPath: '',
   useDownloadFallback: true
 };
+const REPO_URL = 'https://github.com/mingyan9989/grok-chat-bookmark';
 
 const DEFAULT_MODELS = {
   openai: 'gpt-4o-mini',
@@ -146,6 +147,7 @@ const providerEl = document.getElementById('provider');
 const apiFieldsEl = document.getElementById('apiFields');
 const folderPathEl = document.getElementById('folderPath');
 const themeBtnEl = document.getElementById('themeToggle');
+const appTitleEl = document.getElementById('appTitle');
 
 let nativeHostAvailable = false;
 let currentUiLanguage = 'zh';
@@ -162,6 +164,8 @@ document.getElementById('clearFolder').addEventListener('click', onClearFolder);
 document.getElementById('downloadNativeScript').addEventListener('click', onDownloadNativeScript);
 document.getElementById('clearHistoryBtn').addEventListener('click', onClearHistory);
 themeBtnEl.addEventListener('click', cycleTheme);
+appTitleEl.addEventListener('click', openRepository);
+appTitleEl.addEventListener('keydown', onTitleKeydown);
 uiLanguageEl.addEventListener('change', onUiLanguageChange);
 providerEl.addEventListener('change', syncProviderVisibility);
 aiEnabledEl.addEventListener('change', syncProviderVisibility);
@@ -475,6 +479,17 @@ function setStatus(text, isError = false) {
   statusEl.textContent = text;
   statusEl.classList.toggle('error', isError);
   statusEl.classList.toggle('ok', !isError);
+}
+
+function openRepository() {
+  chrome.tabs.create({ url: REPO_URL });
+}
+
+function onTitleKeydown(event) {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    openRepository();
+  }
 }
 
 function sendMessage(payload) {

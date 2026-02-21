@@ -94,6 +94,20 @@ body {
   font-size: 18px;
 }
 
+.header h1.clickable-title {
+  cursor: pointer;
+}
+
+.header h1.clickable-title:hover {
+  text-decoration: underline;
+}
+
+.header h1.clickable-title:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
 .header-row {
   display: flex;
   justify-content: space-between;
