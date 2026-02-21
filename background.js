@@ -18,6 +18,7 @@ const PROVIDER_DEFAULT_ENDPOINTS = {
 const DEFAULT_SETTINGS = {
   aiEnabled: true,
   exportMode: 'tldr',
+  language: 'zh-CN',
   provider: 'local-claude',
   apiKey: '',
   baseUrl: '',
@@ -197,6 +198,7 @@ function renderExportMarkdown({ chat, tldr, originalConversation, referencedLink
   lines.push(`- Provider: ${settings.provider}`);
   lines.push(`- Messages: ${chat.messages.length}`);
   lines.push(`- Export Mode: ${modeLabel}`);
+  lines.push(`- Language: ${settings.language || 'zh-CN'}`);
   lines.push('');
   lines.push('---');
   lines.push('');
@@ -236,7 +238,7 @@ async function generateStructuredTldr(chat, settings) {
     let tldr = '';
     switch (settings.provider) {
       case 'local-claude':
-        tldr = await runLocalClaudeSummary(chat);
+        tldr = await runLocalClaudeSummary(chat, settings);
         break;
       case 'claude':
         tldr = await runClaudeApiSummary(chat, settings);
@@ -256,8 +258,10 @@ async function generateStructuredTldr(chat, settings) {
   }
 }
 
-function buildSummaryPrompt(chat) {
+function buildSummaryPrompt(chat, language) {
+  const langName = getLanguageName(language);
   return [
+    `Please write the summary in ${langName}.`,
     'Analyze this Grok conversation and output markdown with exactly these sections:',
     '### Key Points',
     '- bullet list',
@@ -276,19 +280,20 @@ function buildSummaryPrompt(chat) {
   ].join('\n');
 }
 
-async function runLocalClaudeSummary(chat) {
+async function runLocalClaudeSummary(chat, settings) {
   const system = [
     'You are an expert conversation analyst.',
     'Generate a structured TLDR in markdown.',
     'Keep facts faithful to the conversation only.',
     'Always include a Fact Check score from 1 to 10.',
+    `Write output language in ${getLanguageName(settings.language)}.`,
     'Return markdown only, no preface.'
   ].join(' ');
 
   const result = await sendNativeMessage({
     action: 'call_claude',
     system,
-    user: buildSummaryPrompt(chat)
+    user: buildSummaryPrompt(chat, settings.language)
   });
 
   if (!result?.success || !result.text || !result.text.trim()) {
@@ -320,7 +325,7 @@ async function runOpenAICompatibleSummary(chat, provider, settings) {
         },
         {
           role: 'user',
-          content: buildSummaryPrompt(chat)
+          content: buildSummaryPrompt(chat, settings.language)
         }
       ]
     })
@@ -361,7 +366,7 @@ async function runClaudeApiSummary(chat, settings) {
       messages: [
         {
           role: 'user',
-          content: buildSummaryPrompt(chat)
+          content: buildSummaryPrompt(chat, settings.language)
         }
       ]
     })
@@ -392,6 +397,17 @@ function requireApiKey(settings) {
     throw new Error('当前模型需要 API Key。');
   }
   return key;
+}
+
+function getLanguageName(code) {
+  const map = {
+    'zh-CN': 'Simplified Chinese',
+    'zh-TW': 'Traditional Chinese',
+    en: 'English',
+    ja: 'Japanese',
+    ko: 'Korean'
+  };
+  return map[code] || 'Simplified Chinese';
 }
 
 async function resolveApiEndpoint(provider, baseUrl) {

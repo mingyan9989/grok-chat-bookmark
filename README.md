@@ -19,6 +19,7 @@
 - 历史记录：自动保存导出记录，可在弹窗“历史”页回看
 - Markdown 归档：AI 模式导出 `TLDR + 原文`，并附带 Metadata/Referenced Links
 - 自定义保存路径：通过 Native Helper 可选择任意本地目录并支持清空重选
+- 多语言摘要：支持简中 / 繁中 / English / 日本語 / 한국어
 - 自定义目录：可指定 Claude Code 根目录
 - 自定义子文件夹名：默认 `grok bookmark`，可改成任何名字
 - 失败回退：本地写入失败时可自动回退到浏览器下载
@@ -72,7 +73,7 @@ bash install-macos.sh <你的扩展ID>
 如果不走 Claude Code，可切换到云模型提供方（OpenAI / Claude / Kimi / 智谱）：
 
 1. 在弹窗保持 `AI 摘要开关` 开启，导出模式选 `TLDR`
-2. 选择 AI 提供方
+2. 选择摘要语言与 AI 提供方
 3. 填写：
 - API Key
 - Model（可留空，使用默认）

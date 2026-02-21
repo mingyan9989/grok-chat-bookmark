@@ -19,6 +19,7 @@
 - History: exports are saved and viewable in the popup History tab
 - Markdown archive includes TLDR + original conversation with metadata/referenced links
 - Custom save path via Native Helper with select/clear folder flow
+- Multi-language summary: Simplified Chinese / Traditional Chinese / English / Japanese / Korean
 - Custom base folder (Claude Code root)
 - Custom subfolder name (default: `grok bookmark`)
 - Download fallback when native write fails
@@ -72,7 +73,7 @@ bash install-macos.sh <your-extension-id>
 If you don't want Claude Code mode, switch to a cloud provider (OpenAI / Claude / Kimi / Zhipu):
 
 1. Keep `AI toggle` on and select `TLDR` mode
-2. Choose provider
+2. Choose summary language and provider
 3. Fill:
 - API Key
 - Model (optional; leave blank to use default)

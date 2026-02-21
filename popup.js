@@ -1,6 +1,7 @@
 const DEFAULTS = {
   aiEnabled: true,
   exportMode: 'tldr',
+  language: 'zh-CN',
   provider: 'local-claude',
   apiKey: '',
   baseUrl: '',
@@ -21,6 +22,7 @@ const DEFAULT_MODELS = {
 const statusEl = document.getElementById('status');
 const aiEnabledEl = document.getElementById('aiEnabled');
 const exportModeEl = document.getElementById('exportMode');
+const languageEl = document.getElementById('language');
 const providerEl = document.getElementById('provider');
 const apiFieldsEl = document.getElementById('apiFields');
 const folderPathEl = document.getElementById('folderPath');
@@ -48,6 +50,7 @@ async function init() {
 
   aiEnabledEl.checked = !!settings.aiEnabled;
   exportModeEl.value = settings.exportMode;
+  languageEl.value = settings.language || DEFAULTS.language;
   providerEl.value = settings.provider;
   document.getElementById('apiKey').value = settings.apiKey;
   document.getElementById('baseUrl').value = settings.baseUrl || '';
@@ -131,6 +134,7 @@ function collectSettings() {
   const settings = {
     aiEnabled: !!aiEnabledEl.checked,
     exportMode: exportModeEl.value,
+    language: languageEl.value,
     provider,
     apiKey: (document.getElementById('apiKey').value || '').trim(),
     baseUrl: '',
