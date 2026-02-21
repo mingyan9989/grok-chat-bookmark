@@ -27,6 +27,35 @@ body {
   gap: 10px;
 }
 
+.tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.tab-btn {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: #fff;
+  cursor: pointer;
+}
+
+.tab-btn.active {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.tab-panel {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tab-panel.active {
+  display: flex;
+}
+
 .header h1 {
   margin: 0;
   font-size: 18px;
@@ -111,6 +140,46 @@ select:focus {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
+}
+
+.history-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 280px;
+  overflow: auto;
+}
+
+.history-item {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px;
+  background: #fff;
+}
+
+.history-item .title {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.history-item .meta {
+  margin: 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.history-item .preview {
+  margin: 6px 0 0;
+  font-size: 11px;
+  white-space: pre-wrap;
+  color: #374151;
 }
 
 button {

@@ -13,59 +13,77 @@
         <p>一键把当前 Grok 对话导出为 Markdown</p>
       </section>
 
-      <section class="card">
-        <label class="checkbox-row">
-          <input id="aiEnabled" type="checkbox" checked />
-          <span>AI 摘要开关（默认开启）</span>
-        </label>
-
-        <label class="label" for="exportMode">导出模式</label>
-        <select id="exportMode">
-          <option value="tldr">TLDR 摘要模式</option>
-          <option value="original">原文模式（跳过 AI 摘要）</option>
-        </select>
-
-        <label class="label" for="provider">AI 提供方</label>
-        <select id="provider">
-          <option value="local-claude">Claude Code（默认）</option>
-          <option value="openai">OpenAI (GPT)</option>
-          <option value="claude">Claude (Anthropic API)</option>
-          <option value="kimi">Kimi (Moonshot)</option>
-          <option value="zhipu">智谱 (GLM)</option>
-        </select>
-
-        <div id="apiFields" class="hidden">
-          <label class="label" for="apiKey">API Key</label>
-          <input id="apiKey" type="password" placeholder="sk-..." />
-
-          <label class="label" for="baseUrl">Base URL（可选）</label>
-          <input id="baseUrl" placeholder="https://your-proxy.com/v1" />
-
-          <label class="label" for="apiModel">Model</label>
-          <input id="apiModel" placeholder="gpt-4o-mini" />
-          <p id="modelHint" class="label">默认: 自动</p>
-        </div>
+      <section class="tabs">
+        <button class="tab-btn active" data-tab="settings" type="button">设置</button>
+        <button class="tab-btn" data-tab="history" type="button">历史</button>
       </section>
 
-      <section class="card">
-        <label class="label" for="folderName">目标子文件夹名</label>
-        <input id="folderName" placeholder="grok bookmark" />
+      <section id="tab-settings" class="tab-panel active">
+        <section class="card">
+          <label class="checkbox-row">
+            <input id="aiEnabled" type="checkbox" checked />
+            <span>AI 摘要开关（默认开启）</span>
+          </label>
 
-        <label class="label">Claude Code 根目录</label>
-        <div class="folder-row">
-          <span id="folderPath" class="path">未选择（首次导出会提示你选择）</span>
-          <button id="pickFolder" type="button" class="secondary">选择</button>
-        </div>
+          <label class="label" for="exportMode">导出模式</label>
+          <select id="exportMode">
+            <option value="tldr">TLDR 摘要模式</option>
+            <option value="original">原文模式（跳过 AI 摘要）</option>
+          </select>
 
-        <label class="checkbox-row">
-          <input id="useDownloadFallback" type="checkbox" />
-          <span>当本地写入失败时自动下载到浏览器 Download</span>
-        </label>
+          <label class="label" for="provider">AI 提供方</label>
+          <select id="provider">
+            <option value="local-claude">Claude Code（默认）</option>
+            <option value="openai">OpenAI (GPT)</option>
+            <option value="claude">Claude (Anthropic API)</option>
+            <option value="kimi">Kimi (Moonshot)</option>
+            <option value="zhipu">智谱 (GLM)</option>
+          </select>
+
+          <div id="apiFields" class="hidden">
+            <label class="label" for="apiKey">API Key</label>
+            <input id="apiKey" type="password" placeholder="sk-..." />
+
+            <label class="label" for="baseUrl">Base URL（可选）</label>
+            <input id="baseUrl" placeholder="https://your-proxy.com/v1" />
+
+            <label class="label" for="apiModel">Model</label>
+            <input id="apiModel" placeholder="gpt-4o-mini" />
+            <p id="modelHint" class="label">默认: 自动</p>
+          </div>
+        </section>
+
+        <section class="card">
+          <label class="label" for="folderName">目标子文件夹名</label>
+          <input id="folderName" placeholder="grok bookmark" />
+
+          <label class="label">Claude Code 根目录</label>
+          <div class="folder-row">
+            <span id="folderPath" class="path">未选择（首次导出会提示你选择）</span>
+            <button id="pickFolder" type="button" class="secondary">选择</button>
+          </div>
+
+          <label class="checkbox-row">
+            <input id="useDownloadFallback" type="checkbox" />
+            <span>当本地写入失败时自动下载到浏览器 Download</span>
+          </label>
+        </section>
+
+        <section class="actions">
+          <button id="saveBtn" class="secondary" type="button">保存设置</button>
+          <button id="exportBtn" class="primary" type="button">导出当前对话</button>
+        </section>
       </section>
 
-      <section class="actions">
-        <button id="saveBtn" class="secondary" type="button">保存设置</button>
-        <button id="exportBtn" class="primary" type="button">导出当前对话</button>
+      <section id="tab-history" class="tab-panel">
+        <section class="card">
+          <div class="history-head">
+            <span class="label">导出历史</span>
+            <button id="clearHistoryBtn" type="button" class="secondary">清空</button>
+          </div>
+          <p id="historyEmpty" class="label">暂无历史记录</p>
+          <div id="historyList" class="history-list"></div>
+        </section>
       </section>
 
       <p id="status" class="status"></p>

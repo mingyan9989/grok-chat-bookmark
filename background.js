@@ -26,6 +26,7 @@ const DEFAULT_SETTINGS = {
   baseFolderPath: '',
   useDownloadFallback: true
 };
+const MAX_HISTORY = 200;
 
 chrome.runtime.onInstalled.addListener(async () => {
   const current = await chrome.storage.sync.get(Object.keys(DEFAULT_SETTINGS));
@@ -95,6 +96,15 @@ async function exportCurrentGrokChat() {
         filePath: saved.path,
         preview
       });
+      await saveHistoryEntry({
+        title: chat.title || 'Grok Chat',
+        sourceUrl: chat.url || '',
+        mode,
+        provider: settings.provider,
+        method: 'native',
+        path: saved.path,
+        preview
+      });
       return {
         method: 'native',
         filePath: saved.path,
@@ -113,6 +123,15 @@ async function exportCurrentGrokChat() {
     mode,
     method: 'download',
     filename,
+    preview
+  });
+  await saveHistoryEntry({
+    title: chat.title || 'Grok Chat',
+    sourceUrl: chat.url || '',
+    mode,
+    provider: settings.provider,
+    method: 'download',
+    path: `${settings.folderName}/${filename}`,
     preview
   });
   return {
@@ -530,4 +549,24 @@ function sendNativeMessage(payload) {
 function notifyExportCard(tabId, payload) {
   if (!tabId) return;
   chrome.tabs.sendMessage(tabId, { type: 'SHOW_EXPORT_CARD', payload }).catch(() => {});
+}
+
+async function saveHistoryEntry(entry) {
+  const result = await chrome.storage.local.get({ history: [] });
+  const history = Array.isArray(result.history) ? result.history : [];
+
+  const normalized = {
+    id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    timestamp: Date.now(),
+    title: entry.title || 'Grok Chat',
+    sourceUrl: entry.sourceUrl || '',
+    mode: entry.mode || 'TLDR',
+    provider: entry.provider || 'local-claude',
+    method: entry.method || 'download',
+    path: entry.path || '',
+    preview: entry.preview || ''
+  };
+
+  history.unshift(normalized);
+  await chrome.storage.local.set({ history: history.slice(0, MAX_HISTORY) });
 }

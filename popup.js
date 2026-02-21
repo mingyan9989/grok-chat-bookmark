@@ -32,9 +32,13 @@ init().catch((error) => {
 document.getElementById('saveBtn').addEventListener('click', onSave);
 document.getElementById('exportBtn').addEventListener('click', onExport);
 document.getElementById('pickFolder').addEventListener('click', onPickFolder);
+document.getElementById('clearHistoryBtn').addEventListener('click', onClearHistory);
 providerEl.addEventListener('change', syncProviderVisibility);
 aiEnabledEl.addEventListener('change', syncProviderVisibility);
 exportModeEl.addEventListener('change', syncProviderVisibility);
+document.querySelectorAll('.tab-btn').forEach((btn) => {
+  btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab') || 'settings'));
+});
 
 async function init() {
   const settings = await loadSettings();
@@ -50,6 +54,7 @@ async function init() {
 
   renderFolderPath(settings.baseFolderPath);
   syncProviderVisibility();
+  await loadHistory();
 }
 
 function syncProviderVisibility() {
@@ -97,6 +102,7 @@ async function onExport() {
     } else {
       setStatus(`导出成功（下载）: ${result.filename}`);
     }
+    await loadHistory();
   } catch (error) {
     setStatus(error.message, true);
   }
@@ -191,4 +197,63 @@ function sendMessage(payload) {
       resolve(response);
     });
   });
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((btn) => {
+    btn.classList.toggle('active', btn.getAttribute('data-tab') === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach((panel) => {
+    panel.classList.toggle('active', panel.id === `tab-${name}`);
+  });
+  if (name === 'history') {
+    loadHistory().catch(() => {});
+  }
+}
+
+async function loadHistory() {
+  const result = await chrome.storage.local.get({ history: [] });
+  const history = Array.isArray(result.history) ? result.history : [];
+  const listEl = document.getElementById('historyList');
+  const emptyEl = document.getElementById('historyEmpty');
+
+  listEl.innerHTML = '';
+  if (history.length === 0) {
+    emptyEl.style.display = 'block';
+    return;
+  }
+
+  emptyEl.style.display = 'none';
+
+  const fragment = document.createDocumentFragment();
+  history.forEach((entry) => {
+    const item = document.createElement('div');
+    item.className = 'history-item';
+
+    const title = document.createElement('p');
+    title.className = 'title';
+    title.textContent = entry.title || 'Grok Chat';
+
+    const meta = document.createElement('p');
+    meta.className = 'meta';
+    const time = new Date(entry.timestamp || Date.now()).toLocaleString();
+    meta.textContent = `${time} · ${entry.mode || 'TLDR'} · ${entry.provider || 'local-claude'}`;
+
+    const preview = document.createElement('p');
+    preview.className = 'preview';
+    preview.textContent = (entry.preview || '').slice(0, 200) || '(no preview)';
+
+    item.appendChild(title);
+    item.appendChild(meta);
+    item.appendChild(preview);
+    fragment.appendChild(item);
+  });
+
+  listEl.appendChild(fragment);
+}
+
+async function onClearHistory() {
+  await chrome.storage.local.set({ history: [] });
+  await loadHistory();
+  setStatus('历史记录已清空。');
 }
