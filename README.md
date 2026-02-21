@@ -2,7 +2,17 @@
 
 > 一个 Chrome 扩展：点击一次按钮，把当前 Grok 对话导出为 Markdown，并优先保存到你的 Claude Code 目录。
 
-中文 | [English](README_EN.md)
+[English](README_EN.md) | 中文
+
+## Key Highlights | 核心亮点
+
+- One-click export of the current Grok conversation to Markdown. / 一键导出 Grok 当前对话为 Markdown。
+- Supports TLDR summary mode and original-content mode. / 支持 TLDR 摘要模式与原文模式。
+- Supports local Claude Code and cloud providers (OpenAI/Claude/Kimi/Zhipu). / 支持本地 Claude Code 与云模型（OpenAI/Claude/Kimi/智谱）。
+- Supports multilingual summaries (zh-CN/zh-TW/English/日本語/한국어). / 支持多语言摘要（简中/繁中/English/日本語/한국어）。
+- Supports UI language switch (English/中文) and theme modes (Auto/Light/Dark). / 支持界面语言切换（English/中文）与主题模式（自动/浅色/深色）。
+- Supports custom save path via Native Helper (default: Downloads/grok-chat-bookmark/). / 支持通过 Native Helper 自定义保存路径（默认：Downloads/grok-chat-bookmark/）。
+- API keys are encrypted with AES-GCM in local storage and never synced. / API Key 使用 AES-GCM 在本地加密存储，不会同步。
 
 ## 功能特点
 
