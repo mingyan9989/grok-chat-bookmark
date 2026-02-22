@@ -492,21 +492,34 @@ function onTitleKeydown(event) {
   }
 }
 
-function sendMessage(payload) {
-  return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage(payload, (response) => {
-      const err = chrome.runtime.lastError;
-      if (err) {
-        reject(new Error(err.message));
-        return;
+async function sendMessage(payload, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await new Promise((resolve, reject) => {
+        chrome.runtime.sendMessage(payload, (response) => {
+          const err = chrome.runtime.lastError;
+          if (err) {
+            reject(new Error(err.message));
+            return;
+          }
+          if (!response?.ok) {
+            reject(new Error(response?.error || t('errUnknownExtension')));
+            return;
+          }
+          resolve(response);
+        });
+      });
+      return response;
+    } catch (error) {
+      const isConnectionError = error.message.includes('Could not establish connection')
+        || error.message.includes('Receiving end does not exist');
+      if (isConnectionError && i < retries - 1) {
+        await new Promise(r => setTimeout(r, 200 * (i + 1)));
+        continue;
       }
-      if (!response?.ok) {
-        reject(new Error(response?.error || t('errUnknownExtension')));
-        return;
-      }
-      resolve(response);
-    });
-  });
+      throw error;
+    }
+  }
 }
 
 async function checkNativeHost() {
@@ -547,12 +560,25 @@ function cycleTheme() {
 
 function buildNativeInstallScript(extensionId, uiLang) {
   const isEn = uiLang === 'en';
-  const prompt = isEn
-    ? 'Enter the absolute path of your local grok-chat-bookmark project: '
-    : '请输入本地 grok-chat-bookmark 项目绝对路径: ';
-  const emptyTip = isEn ? 'No path entered. Exit.' : '未输入路径，退出。';
-  const notFoundTip = isEn ? 'Not found: $HOST_PATH' : '未找到: $HOST_PATH';
-  const doneTip = isEn ? 'Done. Please restart your browser.' : '完成。请重启浏览器。';
+  const repoRaw = REPO_URL.replace('github.com', 'raw.githubusercontent.com') + '/main';
+  const errPython = isEn
+    ? 'echo "Error: Python 3 is required. Please install Python 3 first."'
+    : 'echo "错误：需要 Python 3，请先安装。"';
+  const errCurl = isEn
+    ? 'echo "Error: curl is required to download the native host script."'
+    : 'echo "错误：需要 curl 来下载 native host 脚本。"';
+  const errDownload = isEn
+    ? 'echo "Download failed. Please check your network and retry."'
+    : 'echo "下载失败，请检查网络后重试。"';
+  const errNoBrowser = isEn
+    ? 'echo "No supported Chromium browser detected."'
+    : 'echo "未检测到支持的 Chromium 浏览器。"';
+  const errUnsupportedOS = isEn
+    ? 'echo "Unsupported OS: $(uname -s). Only macOS is supported."'
+    : 'echo "不支持的操作系统：$(uname -s)。目前仅支持 macOS。"';
+  const doneTip = isEn
+    ? 'echo "Done. Please restart your browser."'
+    : 'echo "完成。请重启浏览器。"';
 
   return [
     '#!/bin/bash',
@@ -560,20 +586,33 @@ function buildNativeInstallScript(extensionId, uiLang) {
     '',
     `EXT_ID="${extensionId}"`,
     'HOST_NAME="com.grok.chat_bookmark_writer"',
+    'INSTALL_DIR="$HOME/.grok-bookmark"',
+    `SCRIPT_URL="${repoRaw}/native-host/grok_file_writer.py"`,
     '',
-    `read -r -p "${prompt}" PROJECT_DIR`,
-    'if [ -z "$PROJECT_DIR" ]; then',
-    `  echo "${emptyTip}"`,
+    '# ── Check dependencies ──',
+    'if ! command -v python3 &>/dev/null; then',
+    `  ${errPython}`,
+    '  exit 1',
+    'fi',
+    'if ! command -v curl &>/dev/null; then',
+    `  ${errCurl}`,
     '  exit 1',
     'fi',
     '',
-    'HOST_PATH="$PROJECT_DIR/native-host/grok_file_writer.py"',
-    'if [ ! -f "$HOST_PATH" ]; then',
-    `  echo "${notFoundTip}"`,
+    '# ── Download native host script ──',
+    'mkdir -p "$INSTALL_DIR"',
+    'if ! curl -fsSL "$SCRIPT_URL" -o "$INSTALL_DIR/grok_file_writer.py"; then',
+    `  ${errDownload}`,
     '  exit 1',
     'fi',
+    'chmod +x "$INSTALL_DIR/grok_file_writer.py"',
+    'HOST_PATH="$INSTALL_DIR/grok_file_writer.py"',
     '',
-    'chmod +x "$HOST_PATH"',
+    '# ── Check macOS ──',
+    'if [ "$(uname -s)" != "Darwin" ]; then',
+    `  ${errUnsupportedOS}`,
+    '  exit 1',
+    'fi',
     '',
     'BROWSER_DIRS=(',
     '  "$HOME/Library/Application Support/Google/Chrome/NativeMessagingHosts"',
@@ -584,6 +623,7 @@ function buildNativeInstallScript(extensionId, uiLang) {
     '  "$HOME/Library/Application Support/Microsoft Edge/NativeMessagingHosts"',
     ')',
     '',
+    '# ── Install native host manifest ──',
     'count=0',
     'for dir in "${BROWSER_DIRS[@]}"; do',
     '  parent="$(dirname "$dir")"',
@@ -595,7 +635,7 @@ function buildNativeInstallScript(extensionId, uiLang) {
     '  "description": "File writer for Grok Bookmark extension",',
     '  "path": "$HOST_PATH",',
     '  "type": "stdio",',
-    '  "allowed_origins": ["chrome-extension://' + extensionId + '/"]',
+    `  "allowed_origins": ["chrome-extension://${extensionId}/"]`,
     '}',
     'MANIFEST',
     '    echo "Installed: $dir/$HOST_NAME.json"',
@@ -604,11 +644,11 @@ function buildNativeInstallScript(extensionId, uiLang) {
     'done',
     '',
     'if [ "$count" -eq 0 ]; then',
-    '  echo "No Chromium browser detected."',
+    `  ${errNoBrowser}`,
     '  exit 1',
     'fi',
     '',
-    `echo "${doneTip}"`,
+    doneTip,
     ''
   ].join('\n');
 }

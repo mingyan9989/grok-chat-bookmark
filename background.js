@@ -84,7 +84,12 @@ async function exportCurrentGrokChat() {
     throw new Error('请先打开 Grok 对话页面（https://grok.com/...）。');
   }
 
-  const extraction = await chrome.tabs.sendMessage(tab.id, { type: 'EXTRACT_GROK_CHAT' });
+  let extraction;
+  try {
+    extraction = await chrome.tabs.sendMessage(tab.id, { type: 'EXTRACT_GROK_CHAT' });
+  } catch (err) {
+    throw new Error('无法连接到 Grok 页面，请刷新页面后重试。');
+  }
   if (!extraction?.ok || !extraction?.chat) {
     throw new Error(extraction?.error || '无法读取当前对话内容。');
   }
@@ -614,18 +619,40 @@ function joinPath(baseFolderPath, folderName, filename) {
 }
 
 async function downloadMarkdown(markdown, folderName, filename) {
-  const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
+  await ensureOffscreenDocument();
+
+  const response = await chrome.runtime.sendMessage({
+    type: 'CREATE_BLOB_URL',
+    content: markdown
+  });
 
   try {
     await chrome.downloads.download({
-      url,
+      url: response.url,
       filename: `${folderName || DEFAULT_SETTINGS.folderName}/${filename}`,
       saveAs: false
     });
   } finally {
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    setTimeout(async () => {
+      try {
+        await chrome.runtime.sendMessage({ type: 'REVOKE_BLOB_URL', url: response.url });
+        await chrome.offscreen.closeDocument();
+      } catch (_) {
+        // Ignore cleanup errors.
+      }
+    }, 5000);
   }
+}
+
+async function ensureOffscreenDocument() {
+  const contexts = await chrome.runtime.getContexts({ contextTypes: ['OFFSCREEN_DOCUMENT'] });
+  if (contexts.length > 0) return;
+
+  await chrome.offscreen.createDocument({
+    url: 'offscreen.html',
+    reasons: ['BLOBS'],
+    justification: 'Create blob URL for markdown file download'
+  });
 }
 
 function sendNativeMessage(payload) {

@@ -278,7 +278,6 @@ function cleanText(text) {
     .replace(/\u00a0/g, ' ')
     .replace(/\n{3,}/g, '\n\n')
     .replace(/[ \t]+\n/g, '\n')
-    .replace(/\n[ \t]+/g, '\n')
     .trim();
 }
 

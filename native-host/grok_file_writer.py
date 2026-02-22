@@ -12,6 +12,7 @@ Actions:
 import glob
 import json
 import os
+import platform
 import struct
 import subprocess
 import sys
@@ -36,9 +37,12 @@ def send_message(msg):
 
 
 def pick_folder():
+    if platform.system() != 'Darwin':
+        return {'success': False, 'error': f'Folder picker only supported on macOS'}
+
     try:
         proc = subprocess.run(
-            ['osascript', '-e', 'POSIX path of (choose folder with prompt "选择 Claude Code 根目录")'],
+            ['osascript', '-e', 'POSIX path of (choose folder with prompt "Select save directory")'],
             capture_output=True,
             text=True,
             timeout=120,
@@ -139,7 +143,7 @@ def call_claude(system, user):
     prompt = (system + '\n\n' + user) if system else user
     try:
         result = subprocess.run(
-            [claude_bin, '-p', prompt, '--output-format', 'text', '--dangerously-skip-permissions'],
+            [claude_bin, '-p', prompt, '--output-format', 'text'],
             stdin=subprocess.DEVNULL,
             capture_output=True,
             text=True,
