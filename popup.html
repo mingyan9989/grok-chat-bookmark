@@ -4,105 +4,131 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Grok Bookmark</title>
+    <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
     <main class="app">
+      <!-- Header -->
       <section class="header">
         <div class="header-row">
-          <h1 id="appTitle" class="clickable-title" role="button" tabindex="0">Grok Bookmark</h1>
+          <h1 id="appTitle" class="logo clickable-title" role="button" tabindex="0">Grok<br />Bookmark</h1>
           <div class="header-actions">
-            <select id="uiLanguage" class="lang-select" aria-label="UI Language">
+            <select id="uiLanguage" class="lang-pill" aria-label="UI Language">
               <option value="zh">中文</option>
               <option value="en">English</option>
             </select>
-            <button id="themeToggle" class="secondary" type="button">主题: 自动</button>
+            <button id="themeToggle" class="theme-pill" type="button">
+              <span class="theme-label">主题</span>
+              <span class="theme-value">自动</span>
+            </button>
           </div>
         </div>
-        <p id="subtitle">一键把当前 Grok 对话导出为 Markdown</p>
+        <p id="subtitle" class="subtitle">一键把当前 Grok 对话导出为 Markdown</p>
       </section>
 
+      <!-- Tabs -->
       <section class="tabs">
         <button id="tabSettingsBtn" class="tab-btn active" data-tab="settings" type="button">设置</button>
         <button id="tabHistoryBtn" class="tab-btn" data-tab="history" type="button">历史</button>
       </section>
 
+      <!-- Settings Panel -->
       <section id="tab-settings" class="tab-panel active">
         <section class="card">
-          <label class="checkbox-row">
-            <input id="aiEnabled" type="checkbox" checked />
-            <span id="aiToggleText">AI 摘要开关（默认开启）</span>
-          </label>
+          <div class="toggle-row">
+            <input id="aiEnabled" type="checkbox" class="ndot-checkbox" checked />
+            <label for="aiEnabled" id="aiToggleText" class="toggle-label">AI 摘要开关（默认开启）</label>
+          </div>
 
-          <label id="exportModeLabel" class="label" for="exportMode">导出模式</label>
-          <select id="exportMode">
-            <option id="exportModeTldrOpt" value="tldr">TLDR 摘要模式</option>
-            <option id="exportModeOriginalOpt" value="original">原文模式（跳过 AI 摘要）</option>
-          </select>
+          <div class="field">
+            <label id="exportModeLabel" class="field-label" for="exportMode">导出模式</label>
+            <select id="exportMode" class="field-select">
+              <option id="exportModeTldrOpt" value="tldr">TLDR 摘要模式</option>
+              <option id="exportModeOriginalOpt" value="original">原文模式（跳过 AI 摘要）</option>
+            </select>
+          </div>
 
-          <label id="summaryLangLabel" class="label" for="language">摘要语言</label>
-          <select id="language">
-            <option id="sumLangZhCn" value="zh-CN">简体中文</option>
-            <option id="sumLangZhTw" value="zh-TW">繁體中文</option>
-            <option id="sumLangEn" value="en">English</option>
-            <option id="sumLangJa" value="ja">日本語</option>
-            <option id="sumLangKo" value="ko">한국어</option>
-          </select>
+          <div class="field">
+            <label id="summaryLangLabel" class="field-label" for="language">摘要语言</label>
+            <select id="language" class="field-select">
+              <option id="sumLangZhCn" value="zh-CN">简体中文</option>
+              <option id="sumLangZhTw" value="zh-TW">繁體中文</option>
+              <option id="sumLangEn" value="en">English</option>
+              <option id="sumLangJa" value="ja">日本語</option>
+              <option id="sumLangKo" value="ko">한국어</option>
+            </select>
+          </div>
 
-          <label id="providerLabel" class="label" for="provider">AI 提供方</label>
-          <select id="provider">
-            <option id="providerLocalOpt" value="local-claude">Claude Code（默认）</option>
-            <option value="openai">OpenAI (GPT)</option>
-            <option value="claude">Claude (Anthropic API)</option>
-            <option value="kimi">Kimi (Moonshot)</option>
-            <option value="zhipu">智谱 (GLM)</option>
-          </select>
+          <div class="field">
+            <label id="providerLabel" class="field-label" for="provider">AI 提供方</label>
+            <select id="provider" class="field-select">
+              <option id="providerLocalOpt" value="local-claude">Claude Code（默认）</option>
+              <option value="openai">OpenAI (GPT)</option>
+              <option value="claude">Claude (Anthropic API)</option>
+              <option value="kimi">Kimi (Moonshot)</option>
+              <option value="zhipu">智谱 (GLM)</option>
+            </select>
+          </div>
 
           <div id="apiFields" class="hidden">
-            <label id="apiKeyLabel" class="label" for="apiKey">API Key</label>
-            <input id="apiKey" type="password" placeholder="sk-..." />
-
-            <label id="baseUrlLabel" class="label" for="baseUrl">Base URL（可选）</label>
-            <input id="baseUrl" placeholder="https://your-proxy.com/v1" />
-
-            <label id="modelLabel" class="label" for="apiModel">Model</label>
-            <input id="apiModel" placeholder="gpt-4o-mini" />
-            <p id="modelHint" class="label">默认: 自动</p>
+            <div class="field">
+              <label id="apiKeyLabel" class="field-label" for="apiKey">API Key</label>
+              <input id="apiKey" type="password" placeholder="sk-..." class="field-input" />
+            </div>
+            <div class="field">
+              <label id="baseUrlLabel" class="field-label" for="baseUrl">Base URL（可选）</label>
+              <input id="baseUrl" placeholder="https://your-proxy.com/v1" class="field-input" />
+            </div>
+            <div class="field">
+              <label id="modelLabel" class="field-label" for="apiModel">Model</label>
+              <input id="apiModel" placeholder="gpt-4o-mini" class="field-input" />
+              <p id="modelHint" class="model-hint">默认: 自动</p>
+            </div>
           </div>
         </section>
 
         <section class="card">
-          <label id="folderNameLabel" class="label" for="folderName">目标子文件夹名</label>
-          <input id="folderName" placeholder="grok-chat-bookmark" />
-
-          <label id="rootDirLabel" class="label">Claude Code 根目录</label>
-          <div class="folder-row">
-            <span id="folderPath" class="path">未选择（首次导出会提示你选择）</span>
-            <button id="pickFolder" type="button" class="secondary">选择</button>
-            <button id="clearFolder" type="button" class="secondary hidden">清除</button>
+          <div class="field">
+            <label id="folderNameLabel" class="field-label" for="folderName">目标子文件夹名</label>
+            <input id="folderName" placeholder="grok-chat-bookmark" class="field-input mono" />
           </div>
-          <button id="downloadNativeScript" type="button" class="secondary">一键下载安装脚本</button>
-          <p id="folderHint" class="label">安装 Native Helper 后可直接写入任意目录；未安装时会回退下载。</p>
 
-          <label class="checkbox-row">
-            <input id="useDownloadFallback" type="checkbox" />
-            <span id="downloadFallbackText">当本地写入失败时自动下载到浏览器 Download</span>
-          </label>
+          <div class="field folder-field">
+            <label id="rootDirLabel" class="field-label">Claude Code 根目录</label>
+            <div class="folder-row">
+              <span id="folderPath" class="folder-path">未选择（首次导出会提示你选择）</span>
+              <div class="folder-btns">
+                <button id="pickFolder" type="button" class="btn-pill-dark">选择</button>
+                <button id="clearFolder" type="button" class="btn-pill-light hidden">清除</button>
+              </div>
+            </div>
+          </div>
+
+          <button id="downloadNativeScript" type="button" class="btn-accent">一键下载安装脚本</button>
+
+          <p id="folderHint" class="hint-text">安装 Native Helper 后可直接写入任意目录；未安装时会回退下载。</p>
+
+          <div class="toggle-row">
+            <input id="useDownloadFallback" type="checkbox" class="ndot-checkbox" />
+            <label for="useDownloadFallback" id="downloadFallbackText" class="toggle-label small">当本地写入失败时自动下载到浏览器 Download</label>
+          </div>
         </section>
 
         <section class="actions">
-          <button id="saveBtn" class="secondary" type="button">保存设置</button>
-          <button id="exportBtn" class="primary" type="button">导出当前对话</button>
+          <button id="saveBtn" class="btn-outline" type="button">保存设置</button>
+          <button id="exportBtn" class="btn-primary" type="button">导出当前对话</button>
         </section>
       </section>
 
+      <!-- History Panel -->
       <section id="tab-history" class="tab-panel">
         <section class="card">
           <div class="history-head">
-            <span id="historyTitle" class="label">导出历史</span>
-            <button id="clearHistoryBtn" type="button" class="secondary">清空</button>
+            <span id="historyTitle" class="field-label" style="margin-bottom:0">导出历史</span>
+            <button id="clearHistoryBtn" type="button" class="btn-pill-light">清空</button>
           </div>
-          <p id="historyEmpty" class="label">暂无历史记录</p>
+          <p id="historyEmpty" class="hint-text">暂无历史记录</p>
           <div id="historyList" class="history-list"></div>
         </section>
       </section>

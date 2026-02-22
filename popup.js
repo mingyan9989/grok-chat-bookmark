@@ -546,7 +546,14 @@ function applyTheme(theme) {
     light: t('themeLight'),
     dark: t('themeDark')
   };
-  themeBtnEl.textContent = `${t('themePrefix')}: ${themeLabelMap[resolved] || themeLabelMap.auto}`;
+  const labelEl = themeBtnEl.querySelector('.theme-label');
+  const valueEl = themeBtnEl.querySelector('.theme-value');
+  if (labelEl && valueEl) {
+    labelEl.textContent = t('themePrefix');
+    valueEl.textContent = themeLabelMap[resolved] || themeLabelMap.auto;
+  } else {
+    themeBtnEl.textContent = `${t('themePrefix')}: ${themeLabelMap[resolved] || themeLabelMap.auto}`;
+  }
 }
 
 function cycleTheme() {
