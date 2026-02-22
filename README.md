@@ -2,6 +2,8 @@
 
 One-click export of [Grok](https://grok.com) conversations to well-structured Markdown files.
 
+<img src="docs/screenshot-en.png" alt="Grok Bookmark – English UI" width="400" />
+
 ## English
 
 ### Features
@@ -106,6 +108,8 @@ grok-chat-bookmark/
 ---
 
 ## 中文
+
+<img src="docs/screenshot-zh.png" alt="Grok Bookmark – 中文界面" width="400" />
 
 ### 功能特点
 
