@@ -1,0 +1,40 @@
+Grok Bookmark exports conversations from grok.com to well-structured Markdown files — with optional AI-powered TLDR summaries.
+
+FEATURES
+
+- One-click export from any Grok conversation
+- Two export modes: AI TLDR summary (Key Points, Step-by-Step, Fact Check, Open Questions) or full original conversation
+- Multiple AI providers: local Claude Code (default, no API key needed), OpenAI, Anthropic Claude API, Kimi (Moonshot), Zhipu (GLM)
+- Multilingual summaries: English, Simplified Chinese, Traditional Chinese, Japanese, Korean
+- Secure API key storage with AES-256-GCM encryption (never synced to cloud)
+- Theme support: Auto, Light, Dark
+- Export history with preview
+- Deep extraction: auto-expands collapsed content before export
+- Optional Native Helper for saving files to any local folder (macOS)
+
+HOW TO USE
+
+1. Navigate to any conversation on grok.com
+2. Click the Grok Bookmark icon in your toolbar
+3. Configure your preferred settings (AI provider, language, export mode)
+4. Click "Export Current Chat"
+5. Your Markdown file is saved to Downloads/grok-chat-bookmark/ by default
+
+ADVANCED: NATIVE HELPER (macOS)
+
+Install the optional Native Helper to save exported files directly to any folder on your Mac instead of the Downloads directory. Click "Download Install Script" in the popup to get started.
+
+PERMISSIONS
+
+- storage: Save your settings and export history locally
+- tabs: Detect the active Grok tab for content extraction
+- downloads: Save exported Markdown files to your Downloads folder
+- nativeMessaging: Communicate with the optional local Native Helper for custom file saving
+- offscreen: Technical requirement for creating download URLs in Manifest V3
+
+This extension does not collect, transmit, or sell any personal data. No analytics or tracking. See the Privacy Policy for details.
+
+OPEN SOURCE
+
+Grok Bookmark is open source under the MIT License.
+https://github.com/mingyan9989/grok-chat-bookmark

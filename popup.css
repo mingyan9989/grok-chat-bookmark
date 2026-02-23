@@ -1,5 +1,21 @@
 /* ── Grok Bookmark — ndot-inspired popup ── */
 
+/* --- Local Fonts --- */
+@font-face {
+  font-family: 'DotGothic16';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('fonts/DotGothic16-Regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url('fonts/Inter-Variable.woff2') format('woff2');
+}
+
 /* --- Variables --- */
 :root {
   --bg: #E6E6E6;

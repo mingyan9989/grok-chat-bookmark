@@ -1,21 +1,17 @@
 {
   "manifest_version": 3,
   "name": "Grok Bookmark",
-  "description": "Export current Grok conversations to Markdown and save into your Claude Code folder.",
-  "version": "0.2.0",
+  "description": "Export Grok conversations to structured Markdown with optional AI-powered TLDR summaries.",
+  "version": "1.0.0",
   "permissions": [
-    "activeTab",
     "downloads",
     "nativeMessaging",
     "offscreen",
-    "scripting",
     "storage",
     "tabs"
   ],
   "host_permissions": [
-    "https://grok.com/*",
-    "https://*/*",
-    "http://*/*"
+    "https://grok.com/*"
   ],
   "background": {
     "service_worker": "background.js"
@@ -37,6 +33,7 @@
   "action": {
     "default_icon": {
       "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
       "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     },
@@ -45,6 +42,7 @@
   },
   "icons": {
     "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   }
