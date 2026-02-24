@@ -25,7 +25,7 @@ One-click export of [Grok](https://grok.com) conversations to well-structured Ma
 
 ### Quick Start
 
-1. Install from [Chrome Web Store](#) or load unpacked (see [Developer Install](#developer-install)).
+1. Install from [Chrome Web Store](https://chromewebstore.google.com/detail/grok-bookmark/deijjnkibjhfiimbccbfeaodcacnllpe) or load unpacked (see [Developer Install](#developer-install)).
 2. Open any conversation on [grok.com](https://grok.com).
 3. Click the Grok Bookmark extension icon → **Export Current Chat**.
 4. The Markdown file is saved to `Downloads/grok-chat-bookmark/` by default.
@@ -130,7 +130,7 @@ grok-chat-bookmark/
 
 ### 快速开始
 
-1. 从 [Chrome Web Store](#) 安装，或手动加载（参见[开发者安装](#开发者安装)）。
+1. 从 [Chrome Web Store](https://chromewebstore.google.com/detail/grok-bookmark/deijjnkibjhfiimbccbfeaodcacnllpe) 安装，或手动加载（参见[开发者安装](#开发者安装)）。
 2. 打开 [grok.com](https://grok.com) 上的任意对话。
 3. 点击 Grok Bookmark 扩展图标 → **导出当前对话**。
 4. Markdown 文件默认保存到 `Downloads/grok-chat-bookmark/`。
